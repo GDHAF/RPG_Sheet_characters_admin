@@ -1,0 +1,392 @@
+﻿:root {
+    /* Paleta Clássica Neon Ciano */
+    --bg-base: #030e20;
+    --panel-bg: rgba(4, 18, 38, 0.95);
+    --neon-blue: #00e5ff;
+    --neon-blue-dim: rgba(0, 229, 255, 0.3);
+    --neon-blue-glow: rgba(0, 229, 255, 0.6);
+    --text-label: #00c3d9;
+    --text-value: #ffffff;
+    --font-main: 'Rajdhani', sans-serif;
+    /* Cores de Alerta / Ação */
+    --alert-red: #ff3366;
+    --alert-red-dim: rgba(255, 51, 102, 0.3);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Custom Scrollbar Holográfica */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 229, 255, 0.05);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neon-blue-dim);
+    border-radius: 3px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-blue);
+    }
+
+body {
+    background-color: var(--bg-base);
+    background-image: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+    background-size: 25px 25px;
+    color: var(--text-value);
+    font-family: var(--font-main);
+    margin: 0;
+    padding: 30px 15px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.sheet-container {
+    width: 1200px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    position: relative;
+    z-index: 2;
+}
+
+/* =========================================
+           TOP NAV & HEADER
+           ========================================= */
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--neon-blue-dim);
+    padding-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.system-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--neon-blue);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px var(--neon-blue-glow);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+    .system-title::before {
+        content: '';
+        display: block;
+        width: 15px;
+        height: 15px;
+        background: var(--neon-blue);
+        box-shadow: 0 0 10px var(--neon-blue);
+    }
+
+.top-nav {
+    display: flex;
+    gap: 15px;
+    z-index: 5;
+}
+
+.btn-top {
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid var(--neon-blue);
+    color: var(--text-value);
+    padding: 10px 20px;
+    font-family: var(--font-main);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 4px;
+    text-shadow: 0 0 5px var(--neon-blue);
+    box-shadow: 0 0 5px var(--neon-blue-dim);
+}
+
+    .btn-top:hover {
+        background: var(--neon-blue);
+        color: var(--bg-base);
+        box-shadow: 0 0 15px var(--neon-blue-glow);
+        text-shadow: none;
+    }
+
+.btn-logout {
+    background: rgba(255, 51, 102, 0.1);
+    border-color: var(--alert-red);
+    text-shadow: 0 0 5px var(--alert-red);
+    box-shadow: 0 0 5px var(--alert-red-dim);
+}
+
+    .btn-logout:hover {
+        background: var(--alert-red);
+        color: var(--bg-base);
+        box-shadow: 0 0 15px var(--alert-red);
+        text-shadow: none;
+    }
+
+/* =========================================
+           CYBER PANEL WRAPPER (ID CARDS)
+  ========================================= */
+.agents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 25px;
+}
+
+.id-card {
+    position: relative;
+    padding: 25px 15px 15px 15px;
+    display: flex;
+    flex-direction: column;
+    filter: drop-shadow(0 0 5px var(--neon-blue-dim));
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
+}
+
+    .id-card:hover {
+        transform: translateY(-5px);
+        filter: drop-shadow(0 0 12px var(--neon-blue-glow));
+    }
+
+.cyber-panel-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+    .cyber-panel-bg::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--neon-blue);
+        clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    }
+
+    .cyber-panel-bg::after {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        background: var(--panel-bg);
+        clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+        transition: background 0.3s;
+    }
+
+.id-card:hover .cyber-panel-bg::after {
+    background: rgba(4, 18, 38, 0.7);
+}
+
+.inner-line {
+    position: absolute;
+    inset: 6px;
+    background: rgba(0, 229, 255, 0.5);
+    clip-path: polygon(11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 11px);
+    z-index: 2;
+}
+
+    .inner-line::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        background: var(--panel-bg);
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+
+.panel-title {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-base);
+    color: #f1f9fa;
+    padding: 0 15px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px var(--neon-blue);
+    border-left: 2px solid var(--neon-blue);
+    border-right: 2px solid var(--neon-blue);
+    box-shadow: 0 0 10px var(--neon-blue-dim);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    z-index: 6;
+    transition: color 0.3s, text-shadow 0.3s;
+}
+
+    .panel-title::before, .panel-title::after {
+        content: '[';
+        color: #ffffff;
+        text-shadow: none;
+    }
+
+    .panel-title::after {
+        content: ']';
+    }
+
+    .panel-title.status-Ativo {
+        color: #00ffaa;
+        border-color: #00ffaa;
+        text-shadow: 0 0 5px #00ffaa;
+    }
+
+    .panel-title.status-Em-Missao {
+        color: #ffaa00;
+        border-color: #ffaa00;
+        text-shadow: 0 0 5px #ffaa00;
+    }
+
+    .panel-title.status-Inativo {
+        color: #68696883;
+        border-color: #7b7d7d86;
+        text-shadow: 0 0 5px #83848485;
+    }
+
+    .panel-title.status-Morto {
+        color: #ff000dc1;
+        border-color: #ff0000a9;
+        text-shadow: 0 0 5px #ff000096;
+    }
+
+.id-card:hover .panel-title {
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue-glow);
+}
+
+/* =========================================
+           ID CARD CONTENT
+========================================= */
+.id-card-content {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.id-photo {
+    width: 100px;
+    height: 125px;
+    border: 2px solid var(--neon-blue-dim);
+    background: rgba(0, 229, 255, 0.05);
+    object-fit: cover;
+    box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.2);
+    filter: grayscale(80%) contrast(120%);
+    transition: filter 0.3s;
+}
+
+.id-card:hover .id-photo {
+    filter: grayscale(0%) contrast(100%);
+}
+
+.id-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.data-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+}
+
+    .data-field:last-child {
+        margin-bottom: 0;
+    }
+
+.data-label {
+    color: var(--text-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+    text-shadow: 0 0 5px var(--neon-blue-dim);
+}
+
+.data-value {
+    color: var(--text-value);
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px dashed var(--neon-blue-dim);
+    padding-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.barcode {
+    height: 15px;
+    width: 100%;
+    background: repeating-linear-gradient(90deg, var(--neon-blue-dim), var(--neon-blue-dim) 2px, transparent 2px, transparent 5px, var(--neon-blue-dim) 5px, var(--neon-blue-dim) 6px, transparent 6px, transparent 10px);
+    margin-top: 5px;
+    opacity: 0.6;
+}
+
+/* Cores Baseadas nas Patentes da SCARE */
+.patente-Carmesim {
+    color: #ff3333;
+    text-shadow: 0 0 5px #ff3333;
+}
+
+.patente-Escarlate {
+    color: #ff3366;
+    text-shadow: 0 0 5px #ff3366;
+}
+
+.patente-Violeta {
+    color: #cc33ff;
+    text-shadow: 0 0 5px #cc33ff;
+}
+
+.patente-Indigo {
+    color: #3333ff;
+    text-shadow: 0 0 5px #3333ff;
+}
+
+.patente-Cobalto {
+    color: #3399ff;
+    text-shadow: 0 0 5px #3399ff;
+}
+
+.patente-Marinho {
+    color: #0066cc;
+    text-shadow: 0 0 5px #0066cc;
+}
+
+.patente-Celestial {
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff;
+}
+
+@media (max-width: 768px) {
+    .header-bar {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .top-nav {
+        width: 100%;
+        justify-content: center;
+    }
+}

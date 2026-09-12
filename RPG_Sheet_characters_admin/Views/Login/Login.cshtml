@@ -1,0 +1,132 @@
+﻿@model RPG_Sheet_characters_admin.Models.LoginModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Login";
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/login.css">
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <div class="auth-container">
+
+        <!-- PAINEL ÚNICO DINÂMICO -->
+        <div class="cyber-panel-wrapper">
+            <!-- Título que muda dinamicamente -->
+            <div class="panel-title" id="dynamic-panel-title">Acesso Restrito</div>
+            <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+            <div class="cyber-panel-content">
+
+                @if (TempData["Mensagem"] != null)
+                {
+                    <div style="text-align:center; color: var(--neon-blue); margin-bottom: 10px;">@TempData["Mensagem"]</div>
+                }
+                <div asp-validation-summary="All" style="color:#ff4d4d; text-align:center; margin-bottom:10px;"></div>
+
+                <!-- ============================ -->
+                <!-- FORMULÁRIO DE LOGIN          -->
+                <!-- ============================ -->
+                <form id="form-login" class="auth-form" method="POST" asp-action="Login">
+
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <h2 style="color: var(--neon-blue); margin: 0; letter-spacing: 2px; text-transform: uppercase; font-size: 28px;">S.C.A.R.E.</h2>
+                        <span style="font-size: 13px; color: var(--text-label); opacity: 0.8;">Insira suas credenciais de Agente</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label" for="LoginEmail">Identificação</label>
+                        <input type="text" id="LoginEmail" name="Usuario" class="input-line" placeholder="agente XX" required>
+                       
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label" for="LoginPassword">Código de Acesso</label>
+                        <input type="password" id="LoginPassword" name="Senha" class="input-line" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Autorizar Acesso</button>
+
+                    <div class="toggle-link" onclick="toggleAuthMode('register')">Não possui acesso? Solicitar registro.</div>
+                </form>
+
+                <!-- ============================ -->
+                <!-- FORMULÁRIO DE REGISTRO       -->
+                <!-- ============================ -->
+                <form id="form-register" class="auth-form" method="POST" asp-action="Register" style="display: none;">
+
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <h2 style="color: var(--neon-blue); margin: 0; letter-spacing: 2px; text-transform: uppercase; font-size: 24px;">Alistamento</h2>
+                        <span style="font-size: 13px; color: var(--text-label); opacity: 0.8;">Preencha os dados do novo protocolo</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label" for="RegName">Nome do Agente</label>
+                        <input type="text" id="RegName" name="Usuario" class="input-line" placeholder="Seu nome completo" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label" for="RegEmail">E-mail de Contato</label>
+                        <input type="email" id="RegEmail" name="Email" class="input-line" placeholder="seuemail@provedor.com" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label class="label" for="RegPassword">Senha</label>
+                            <input type="password" id="Senha" name="Senha" class="input-line" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label" for="RegConfirmPassword">Confirmar</label>
+                            <input type="password" id="RegConfirmPassword" name="ConfirmSenha" class="input-line" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Cadastrar-se</button>
+
+                    <div class="toggle-link" onclick="toggleAuthMode('login')">Já possui credenciais? Retornar ao login.</div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT DE ALTERNÂNCIA (TOGGLE) -->
+    <script>
+            function toggleAuthMode(mode) {
+                const formLogin = document.getElementById('form-login');
+                const formRegister = document.getElementById('form-register');
+                const panelTitle = document.getElementById('dynamic-panel-title');
+
+                if (mode === 'register') {
+                    formLogin.style.display = 'none';
+                    formRegister.style.display = 'flex';
+                    panelTitle.innerText = 'Novo Registro';
+                    document.title = "SignUp - SCARE";
+                } else {
+                    formRegister.style.display = 'none';
+                    formLogin.style.display = 'flex';
+                    panelTitle.innerText = 'Acesso Restrito';
+                    document.title = "Login - SCARE";
+                }
+            }
+
+    </script>
+
+    @if (ViewBag.ShowRegister == true)
+    {
+        <script>document.addEventListener('DOMContentLoaded', () => toggleAuthMode('register'));</script>
+    }
+</body>
+</html>

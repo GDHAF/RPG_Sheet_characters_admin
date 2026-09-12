@@ -1,0 +1,62 @@
+﻿
+@{
+    Layout = null;
+    @model List<CriarFichaModel>
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.C.A.R.E. - Banco de Agentes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/agentes.css">
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+</head>
+<body>
+    <div class="sheet-container">
+
+        <!-- CABEÇALHO DO SISTEMA -->
+        <div class="header-bar">
+            <div class="system-title">S.C.A.R.E. // AGENTES REGISTRADOS</div>
+            <div class="top-nav">
+                <a class="btn-top" asp-controller="Inserir" asp-action="Create">+ Novo Agente</a>
+                <a class="btn-top btn-logout" asp-controller="Login" asp-action="Login">Desconectar</a>
+            </div>
+        </div>
+
+        <!-- GRID DE CARTÕES DE IDENTIFICAÇÃO -->
+        <div class="agents-grid">
+
+            @foreach (var agente in Model)
+            {                
+                <a asp-controller="Agentes" asp-action="Agente" asp-route-id="@agente.Id" class="id-card">
+                    <div class="panel-title status-@(agente.Status.Replace(" ", "-").Replace("ã", "a"))">STATUS: @agente.Status</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="id-card-content">
+                        <img src="@(agente.Image_Data != null && agente.Image_Data.Length > 0 ? $"data:image/jpeg;base64,{Convert.ToBase64String(agente.Image_Data)}"
+                                : "/img/Gamma_Future_Simbolo.png")" class="id-photo" alt="@agente.Nome">
+                        <div class="id-details">
+                            <div class="data-field">
+                                <span class="data-label">Identificação Visual</span>
+                                <span class="data-value">@agente.Nome</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="data-label">Codinome / Registro</span>
+                                <span class="data-value">@agente.Cod_Agente</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="data-label">Patente</span>
+                                <span class="data-value patente-@agente.Patente.Replace("Í", "I")">@agente.Patente</span>
+                            </div>
+                            <div class="barcode"></div>
+                        </div>
+                    </div>
+                </a>
+            }
+
+        </div>
+    </div>
+</body>
+</html>

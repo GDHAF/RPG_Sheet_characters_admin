@@ -1,0 +1,709 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Criação de Agente - SCARE";
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/criacao.css">
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <!-- INÍCIO DO FORMULÁRIO GERAL -->
+    <form id="frmCriacao" method="POST" asp-action="Create" enctype="multipart/form-data">
+
+        <div class="sheet-container">
+
+            <!-- TOPO E NAVEGAÇÃO -->
+            <div class="top-nav">
+                <button type="button" class="btn-top" style="margin-right: auto;" onclick="window.location.href='@Url.Action("Listagem", "Agentes")'">Voltar</button>
+                <h1 class="page-title">Criação de Agente</h1>
+                <button type="submit" class="btn-top">Salvar Personagem</button>
+            </div>
+
+            <!-- HEADER -->
+            <div class="cyber-panel-wrapper">
+                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                <div class="cyber-panel-content header-grid">
+                    <div class="header-row">
+                        <div class="header-field" style="flex: 2;">
+                            <span class="label">NOME</span><input type="text" name="Nome" class="input-line" required>
+                        </div>
+                        <div class="header-field" style="flex: 0.8;">
+                            <span class="label">IDADE</span><input type="number" name="Idade" class="input-line" style="text-align: center;" value="20">
+                        </div>
+                        <div class="header-field" style="flex: 1.5;">
+                            <span class="label">FOTO</span><input type="file" name="Imagem" accept="image/*" class="input-line" style="font-family: var(--font-main);">
+                        </div>
+                    </div>
+                    <div class="header-row">
+                        <div class="header-field">
+                            <span class="label">ORIGEM</span>
+                            <div class="select-wrapper">
+                                <select name="Origem" class="input-line">
+                                    <option value="Adotado pela SCARE">Adotado pela SCARE</option>
+                                    <option value="Estudante">Estudante</option>
+                                    <option value="CLT">CLT</option>
+                                    <option value="Sem teto">Sem teto</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="header-field">
+                            <span class="label">CLASSE</span>
+                            <div class="select-wrapper">
+                                <select name="Classe" class="input-line">
+                                    <option value="Pessoa Normal">Pessoa Normal</option>
+                                    <option value="Sensitivo">Sensitivo</option>
+                                    <option value="Prodígio">Prodígio</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIOGRAFIA -->
+            <div class="sub-grid-2">
+                <div class="cyber-panel-wrapper" style="min-height: 180px;">
+                    <div class="panel-title">Descrição Física e Psicológica</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="cyber-panel-content">
+                        <textarea name="Descricao" placeholder="Aparência, trejeitos, peculiaridades..."></textarea>
+                    </div>
+                </div>
+                <div class="cyber-panel-wrapper" style="min-height: 180px;">
+                    <div class="panel-title">Histórico Base</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="cyber-panel-content">
+                        <textarea name="Historia" placeholder="História pregressa do personagem antes da Agência..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN LAYOUT DIVIDER: Left Column (Wide) vs Right Column (Narrow) -->
+            <div class="layout-main-grid">
+
+                <!-- LEFT COLUMN WIDE (Atributos, Vitais, Combate) -->
+                <div class="col-flex">
+
+                    <!-- ATRIBUTOS -->
+                    <div class="cyber-panel-wrapper">
+                        <div class="panel-title">Atributos Primários</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="attr-t20-container">
+                                <input type="hidden" name="Atributos[0].Atributo" value="FOR">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">FOR.</div></div><div class="attr-points"><input type="number" name="Atributos[0].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-FOR" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[1].Atributo" value="CON">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">CON.</div></div><div class="attr-points"><input type="number" name="Atributos[1].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-CON" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[2].Atributo" value="DES">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">DES.</div></div><div class="attr-points"><input type="number" name="Atributos[2].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-DES" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[3].Atributo" value="INT">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">INT.</div></div><div class="attr-points"><input type="number" name="Atributos[3].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-INT" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[4].Atributo" value="CONH">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title" style="font-size: 13px;">CONH.</div></div><div class="attr-points"><input type="number" name="Atributos[4].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-CONH" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[5].Atributo" value="CAR">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">CAR.</div></div><div class="attr-points"><input type="number" name="Atributos[5].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-CAR" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[6].Atributo" value="PRE_C">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">PREC.<br>CURTA</div></div><div class="attr-points"><input type="number" name="Atributos[6].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-PRE-C" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[7].Atributo" value="PRE_L">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">PREC.<br>LONGA</div></div><div class="attr-points"><input type="number" name="Atributos[7].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-PRE-L" readonly tabindex="-1"></div></div></div>
+
+                                <input type="hidden" name="Atributos[8].Atributo" value="PROF">
+                                <div class="attr-box-t20"><div class="attr-title-wrapper"><div class="attr-title">PROF.</div></div><div class="attr-points"><input type="number" name="Atributos[8].Pontos" class="calc-points" value="10" oninput="updateBonus(this)"></div><div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-PROF" readonly tabindex="-1"></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VITAIS (1 fileira com 5 colunas limpas para Criação) -->
+                    <div class="cyber-panel-wrapper">
+                        <div class="panel-title">Recursos Vitais (Base)</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="vitals-t20-grid">
+                                <div class="vital-t20-box">
+                                    <input type="hidden" name="Recursos[0].TipoRecurso" value="Vida">
+                                    <div class="vital-header">
+                                        <span class="vital-title">Pontos de Vida</span>
+                                        <span class="vital-max-label">MÁXIMO</span>
+                                    </div>
+                                    <div class="vital-input-wrapper">
+                                        <input type="number" name="Recursos[0].Maximo" placeholder="20">
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <input type="hidden" name="Recursos[1].TipoRecurso" value="PRP">
+                                    <div class="vital-header">
+                                        <span class="vital-title">PRP</span>
+                                        <span class="vital-max-label">MÁXIMO</span>
+                                    </div>
+                                    <div class="vital-input-wrapper">
+                                        <input type="number" name="Recursos[1].Maximo" placeholder="20">
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <input type="hidden" name="Recursos[2].TipoRecurso" value="Pontos Psiônicos">
+                                    <div class="vital-header">
+                                        <span class="vital-title">P. Psiônicos</span>
+                                        <span class="vital-max-label">MÁXIMO</span>
+                                    </div>
+                                    <div class="vital-input-wrapper">
+                                        <input type="number" name="Recursos[2].Maximo" placeholder="10">
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <input type="hidden" name="Recursos[3].TipoRecurso" value="Sanidade">
+                                    <div class="vital-header">
+                                        <span class="vital-title" style="color: #ff3366;">Sanidade</span>
+                                        <span class="vital-max-label">MÁXIMO</span>
+                                    </div>
+                                    <div class="vital-input-wrapper">
+                                        <input type="number" name="Recursos[3].Maximo" placeholder="100">
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <input type="hidden" name="Recursos[4].TipoRecurso" value="Deslocamento">
+                                    <div class="vital-header">
+                                        <span class="vital-title" style="color: #ffaa00;">Deslocamento</span>
+                                        <span class="vital-max-label">BASE</span>
+                                    </div>
+                                    <div class="vital-input-wrapper">
+                                        <input type="number" name="Recursos[4].Maximo" placeholder="9">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUBGRID DE COMBATE -->
+                    <div class="sub-grid-2" style="flex-grow: 1;">
+
+                        <div class="col-flex">
+                            <div class="cyber-panel-wrapper">
+                                <div class="panel-title">Equipamento Base</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 10px;">
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Armadura:</span>
+                                            <input type="text" name="Armadura" class="input-line" placeholder="Ex: Colete Tático">
+                                        </div>
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Arma:</span>
+                                            <input type="text" name="Arma" class="input-line" placeholder="Ex: Pistola Pesada">
+                                        </div>
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Def. da Arma:</span>
+                                            <input type="number" name="Def_arma" id="defesa-arma" class="input-line" placeholder="0" style="text-align: right;">
+                                        </div>
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Alcance:</span>
+                                            <input type="number" name="Alcance" class="input-line" placeholder="0" style="text-align: right;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cyber-panel-wrapper panel-mt-auto">
+                                <div class="panel-title">Ataques e Danos</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div class="cyber-table">
+                                        <div class="cyber-table-header">
+                                            <span class="cyber-table-cell label" style="flex: 2; color: var(--text-label);">Categoria</span>
+                                            <span class="cyber-table-cell" title="Bônus de Ataque">Bônus Atq.</span>
+                                            <span class="cyber-table-cell" title="Bônus de Dano">Dano Extra</span>
+                                        </div>
+
+                                        <!-- Corte -->
+                                        <input type="hidden" name="Ataques[0].Categoria" value="Ataque">
+                                        <input type="hidden" name="Ataques[0].Tipo" value="Corte">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Corte</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[0].Bonus" class="input-line" value="0" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" name="Ataques[0].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                        <!-- Perfuração -->
+                                        <input type="hidden" name="Ataques[1].Categoria" value="Ataque">
+                                        <input type="hidden" name="Ataques[1].Tipo" value="Perfuração">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Perfuração</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[1].Bonus" class="input-line" value="0" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" name="Ataques[1].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                        <!-- Efeito -->
+                                        <input type="hidden" name="Ataques[2].Categoria" value="Ataque">
+                                        <input type="hidden" name="Ataques[2].Tipo" value="Efeito">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Efeito</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[2].Bonus" class="input-line" value="0" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" name="Ataques[2].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                        <!-- Impacto -->
+                                        <input type="hidden" name="Ataques[3].Categoria" value="Ataque">
+                                        <input type="hidden" name="Ataques[3].Tipo" value="Impacto">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Impacto</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[3].Bonus" class="input-line" value="0" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" name="Ataques[3].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-flex">
+                            <div class="cyber-panel-wrapper">
+                                <div class="panel-title">Ações Rápidas</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div style="display: grid; grid-template-columns: 1fr; gap: 10px; padding-top: 5px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Esquivar</span>
+                                            <input type="text" name="Esquivar" class="input-line" placeholder="1d20 + 0" style="width: 60%; text-align: right;">
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Atacar</span>
+                                            <input type="text" name="Atacar" class="input-line" placeholder="1d20 + Bônus" style="width: 60%; text-align: right;">
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Interromper</span>
+                                            <input type="text" name="Interromper" class="input-line" placeholder="1d20 + 0" style="width: 60%; text-align: right;">
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Dano Base</span>
+                                            <input type="text" name="Dano" class="input-line" placeholder="1d? + Det." style="width: 60%; text-align: right;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cyber-panel-wrapper panel-mt-auto">
+                                <div class="panel-title">CA (Defesa)</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div class="cyber-table">
+                                        <div class="cyber-table-header">
+                                            <span class="cyber-table-cell label" style="flex: 2; color: var(--text-label);">Categoria</span>
+                                            <span class="cyber-table-cell" title="Bônus Específico">Bônus Esp.</span>
+                                        </div>
+
+                                        <input type="hidden" name="Ataques[4].Categoria" value="CA">
+                                        <input type="hidden" name="Ataques[4].Tipo" value="Base">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Base</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[4].Bonus" readonly class="input-line" value="0"></span>
+                                        </div>
+                                        <input type="hidden" name="Ataques[5].Categoria" value="CA">
+                                        <input type="hidden" name="Ataques[5].Tipo" value="Corte">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Corte</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[5].Bonus" class="input-line" value="0"></span>
+                                        </div>
+                                        <input type="hidden" name="Ataques[6].Categoria" value="CA">
+                                        <input type="hidden" name="Ataques[6].Tipo" value="Perfuração">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Perfuração</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[6].Bonus" class="input-line" value="0"></span>
+                                        </div>
+                                        <input type="hidden" name="Ataques[7].Categoria" value="CA">
+                                        <input type="hidden" name="Ataques[7].Tipo" value="Efeito">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Efeito</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[7].Bonus" class="input-line" value="0"></span>
+                                        </div>
+                                        <input type="hidden" name="Ataques[8].Categoria" value="CA">
+                                        <input type="hidden" name="Ataques[8].Tipo" value="Impacto">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Impacto</span>
+                                            <span class="cyber-table-cell"><input type="number" name="Ataques[8].Bonus" class="input-line" value="0"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUNA DIREITA ESTREITA (Perícias) -->
+                <div class="cyber-panel-wrapper" style="height: 100%;">
+                    <div class="panel-title">Perícias</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="cyber-panel-content scrollable-content">
+                        <div class="cyber-table" style="min-width: 320px;">
+                            <div class="cyber-table-header" style="justify-content: space-between;">
+                                <span class="cyber-table-cell label" style="flex: 0.2; text-align:center;" title="Treinado">TR</span>
+                                <span class="cyber-table-cell label" style="flex: 1.8; color: var(--text-label);">Perícia</span>
+                                <span class="cyber-table-cell" style="width: 24px; flex: 0.7;" title="Atributo">ATR</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 24px; flex: 0.7;" title="Treino">TRN</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 24px; flex: 0.7;" title="1/2 Nível">1/2N</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 30px; flex: 0.7;" title="Outros">OUT</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 30px; flex: 0.7; text-align:center;">TOT</span>
+                            </div>
+
+                            <!-- Script JS vai atualizar visualmente, mas o Form submete os Hidden Inputs -->
+                            @{
+                                string[] pericias = { "Acrobacia:DES:fisico", "Ameaça:FOR:fisico", "Atletismo:CON:fisico", "Diplomacia:CAR:fisico", "Engenharia:INT:fisico", "Enganação:CAR:fisico", "Furtividade:DES:fisico", "História:CONH:fisico", "Informática:INT:fisico", "Iniciativa:DES:fisico", "Intimidação:CAR:fisico", "Intuição:CONH:fisico", "Investigação:INT:fisico", "Jogatina:CAR:fisico", "Ladinagem:DES:fisico", "Luta:FOR:fisico", "Manejo:PRE-C:fisico", "Motivar:CAR:fisico", "Percepção:DES:fisico", "Pilotagem:CONH:fisico", "Pontaria:PRE-L:fisico", "Rastreamento:INT:fisico", "Reflexos:DES:fisico", "Resistência:CON:fisico", "Resiliência:CON:fisico", "Ofício:CONH:fisico", "Sensib. Psiônica:CONH:psi" };
+                                for (int i = 0; i < pericias.Length; i++)
+                                {
+                                    var p = pericias[i].Split(':');
+                                    <div class="skill-row" data-attr="@p[1]" data-nvl="@p[2]">
+                                        <input type="hidden" name="Pericias[@i].Pericia" value="@p[0]">
+
+                                        <span class="cell-tr"><input type="checkbox" name="Pericias[@i].Treinado" value="true" class="neon-checkbox skill-tr" onchange="updateSkills()"></span>
+                                        <span class="cell-name">@p[0] <span class="attr-tag">[@p[1].Replace("PRE-C", "PR.C").Replace("PRE-L", "PR.L")]</span></span>
+                                        <input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span>
+                                        <input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span>
+                                        <input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span>
+                                        <input type="number" name="Pericias[@i].Outros" class="cell-num skill-outros" value="0" oninput="updateSkills()"><span class="math-sign">=</span>
+                                        <input type="text" class="cell-num skill-total total-highlight" id="@(p[0] == "Luta" ? "luta-total" : "")" readonly tabindex="-1" value="0">
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN LAYOUT 3 COLUMNS: Emoções / Hexágonos / Profissões -->
+            <div class="layout-3col-grid">
+
+                <!-- COL 1: Emoções Positivas -->
+                <div class="col-flex">
+                    <div class="cyber-panel-wrapper">
+                        <div class="panel-title">Emoções Positivas</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="cyber-table">
+                                <div class="cyber-table-header">
+                                    <span class="cyber-table-cell label" style="flex: 1.5; color: var(--text-label);">Emoção</span>
+                                    <span class="cyber-table-cell">Rank</span>
+                                </div>
+                                @{
+                                    string[] emoPos = { "Determinação", "Entusiasmo", "Autopreservação", "Calma", "Paciência", "Altruísmo" };
+                                    for (int i = 0; i < emoPos.Length; i++)
+                                    {
+                                        <input type="hidden" name="Emocoes[@i].Emocao" value="@emoPos[i]">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 1.5;">@emoPos[i]</span>
+                                            <span class="cyber-table-cell">
+                                                <div class="rank-select-wrapper">
+                                                    <select name="Emocoes[@i].Ranking" id="rank-pos-@i" class="input-line rank-select" onchange="updateEmocoes()">
+                                                        <option value="F">F</option>
+                                                        <option value="E">E</option>
+                                                        <option value="D">D</option>
+                                                        <option value="C">C</option>
+                                                        <option value="B">B</option>
+                                                        <option value="A">A</option>
+                                                        <option value="S">S</option>
+                                                    </select>
+                                                </div>
+                                            </span>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cyber-panel-wrapper panel-mt-auto" style="min-height: 220px;">
+                        <div class="panel-title">Hex Positivo</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content" style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+                            <svg id="svg-pos" width="100%" height="100%" viewBox="0 0 200 200" style="max-height: 180px; overflow: visible;">
+                                <polygon id="poly-pos-fill" points="" fill="rgba(0,255,170,0.3)" stroke="var(--bonus-pos)" stroke-width="2" />
+                                <text x="100" y="30" text-anchor="middle" class="hex-label">Determinação</text>
+                                <text x="165" y="70" text-anchor="start" class="hex-label">Entusiasmo</text>
+                                <text x="165" y="140" text-anchor="start" class="hex-label">Autopreservação</text>
+                                <text x="100" y="175" text-anchor="middle" class="hex-label">Calma</text>
+                                <text x="35" y="140" text-anchor="end" class="hex-label">Paciência</text>
+                                <text x="35" y="70" text-anchor="end" class="hex-label">Altruísmo</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COL 2: Emoções Negativas -->
+                <div class="col-flex">
+                    <div class="cyber-panel-wrapper">
+                        <div class="panel-title">Emoções Negativas</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="cyber-table">
+                                <div class="cyber-table-header">
+                                    <span class="cyber-table-cell label" style="flex: 1.5; color: var(--text-label);">Emoção</span>
+                                    <span class="cyber-table-cell">Rank</span>
+                                </div>
+                                @{
+                                    string[] emoNeg = { "Raiva", "Ansiedade", "Egoísmo", "Frieza", "Obsessão", "Sacrifício" };
+                                    for (int i = 0; i < emoNeg.Length; i++)
+                                    {
+                                        int arrayIndex = i + 6;
+                                        <input type="hidden" name="Emocoes[@arrayIndex].Emocao" value="@emoNeg[i]">
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 1.5;">@emoNeg[i]</span>
+                                            <span class="cyber-table-cell">
+                                                <div class="rank-select-wrapper">
+                                                    <select name="Emocoes[@arrayIndex].Ranking" id="rank-neg-@i" class="input-line rank-select" onchange="updateEmocoes()">
+                                                        <option value="F">F</option>
+                                                        <option value="E">E</option>
+                                                        <option value="D">D</option>
+                                                        <option value="C">C</option>
+                                                        <option value="B">B</option>
+                                                        <option value="A">A</option>
+                                                        <option value="S">S</option>
+                                                    </select>
+                                                </div>
+                                            </span>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cyber-panel-wrapper panel-mt-auto" style="min-height: 220px;">
+                        <div class="panel-title">Hex Negativo</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content" style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+                            <svg id="svg-neg" width="100%" height="100%" viewBox="0 0 200 200" style="max-height: 180px; overflow: visible;">
+                                <polygon id="poly-neg-fill" points="" fill="rgba(255,51,102,0.3)" stroke="var(--bonus-neg)" stroke-width="2" />
+                                <text x="100" y="30" text-anchor="middle" class="hex-label">Raiva</text>
+                                <text x="165" y="70" text-anchor="start" class="hex-label">Ansiedade</text>
+                                <text x="165" y="140" text-anchor="start" class="hex-label">Egoísmo</text>
+                                <text x="100" y="175" text-anchor="middle" class="hex-label">Frieza</text>
+                                <text x="35" y="140" text-anchor="end" class="hex-label">Obsessão</text>
+                                <text x="35" y="70" text-anchor="end" class="hex-label">Sacrifício</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COL 3: Proficiências e Ofícios -->
+                <div class="col-flex">
+                    <div class="cyber-panel-wrapper">
+                        <div class="panel-title">Proficiências</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content scrollable-content">
+                            <textarea name="Proficiencia" placeholder="Armas, armaduras e equipamentos especiais..." style="min-height: 200px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="cyber-panel-wrapper panel-mt-auto" style="min-height: 220px;">
+                        <div class="panel-title">Ofícios</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content scrollable-content">
+                            <textarea name="Oficio" placeholder="Ferramentas e especializações..." style="height: 100%;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ROW INFERIOR SANIDADE -->
+            <div class="cyber-panel-wrapper" style="min-height: 350px;">
+                <div class="panel-title">Situações de Abalo (Sanidade)</div>
+                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                <div class="cyber-panel-content scrollable-content">
+                    <div class="cyber-table">
+                        @{
+                            for (int i = 0; i < 6; i++)
+                            {
+                                <div class="cyber-table-row" style="border-bottom: 1px solid var(--neon-blue-dim); padding: 5px 0;">
+                                    <span class="cyber-table-cell label" style="flex: 4;">
+                                        <textarea name="Sanidades[@i].Situacao" rows="2" placeholder="Descreva o caso de abalo para a situação @(i + 1)..." style="min-height: 35px; font-size: 13px; padding:2px; border:none; border-bottom:1px dashed var(--neon-blue-glow); background:transparent;"></textarea>
+                                    </span>
+                                    <span class="radio-col">B<input type="radio" name="Sanidades[@i].Nivel" value="B" checked></span>
+                                    <span class="radio-col">M<input type="radio" name="Sanidades[@i].Nivel" value="M"></span>
+                                    <span class="radio-col">A<input type="radio" name="Sanidades[@i].Nivel" value="A"></span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+
+    <script>
+            function updateBonus(inputElement) {
+                const points = parseInt(inputElement.value) || 0;
+                const bonus = Math.floor((points - 10) / 2);
+
+                const attrBox = inputElement.closest('.attr-box-t20');
+                const bonusInput = attrBox.querySelector('.calc-bonus');
+
+                if (bonus > 0) {
+                    bonusInput.value = '+' + bonus;
+                    bonusInput.style.color = 'var(--bonus-pos)';
+                    bonusInput.style.textShadow = '0 0 5px rgba(0, 255, 170, 0.5)';
+                } else if (bonus < 0) {
+                    bonusInput.value = bonus;
+                    bonusInput.style.color = 'var(--bonus-neg)';
+                    bonusInput.style.textShadow = '0 0 5px rgba(255, 51, 102, 0.5)';
+                } else {
+                    bonusInput.value = '0';
+                    bonusInput.style.color = '#ffffff';
+                    bonusInput.style.textShadow = 'none';
+                }
+
+                updateSkills();
+            }
+
+            function updateSkills() {
+                const nFis = 1;
+                const nPsi = 1;
+                const halfFis = Math.floor(nFis / 2);
+                const halfPsi = Math.floor(nPsi / 2);
+
+                const getBonus = (id) => parseInt(document.getElementById(id).value) || 0;
+
+                const attrBonuses = {
+                    'FOR': getBonus('bonus-FOR'), 'CON': getBonus('bonus-CON'),
+                    'DES': getBonus('bonus-DES'), 'INT': getBonus('bonus-INT'),
+                    'CONH': getBonus('bonus-CONH'), 'CAR': getBonus('bonus-CAR'),
+                    'PRE-C': getBonus('bonus-PRE-C'), 'PRE-L': getBonus('bonus-PRE-L'),
+                    'PROF': getBonus('bonus-PROF')
+                };
+
+                const skillRows = document.querySelectorAll('.skill-row');
+                skillRows.forEach(row => {
+                    const attrKey = row.getAttribute('data-attr');
+                    const nvlType = row.getAttribute('data-nvl');
+
+                    const isTrained = row.querySelector('.skill-tr').checked;
+                    const outrosVal = parseInt(row.querySelector('.skill-outros').value) || 0;
+
+                    const valAttr = attrBonuses[attrKey] || 0;
+                    const valTreino = isTrained ? 2 : 0;
+                    const valNvl = (nvlType === 'psi') ? halfPsi : halfFis;
+
+                    const total = valAttr + valTreino + valNvl + outrosVal;
+
+                    row.querySelector('.skill-attr').value = valAttr > 0 ? '+' + valAttr : valAttr;
+                    row.querySelector('.skill-treino').value = '+' + valTreino;
+                    row.querySelector('.skill-nvl').value = '+' + valNvl;
+                    row.querySelector('.skill-total').value = total;
+                });
+
+            }
+
+            const rankMap = { 'S': 6, 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1, 'F': 0 };
+
+            function calculateHexPoints(ranks) {
+                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
+                const cx = 100, cy = 100;
+                const maxRadius = 60;
+                const step = maxRadius / 6;
+
+                let points = [];
+                for (let i = 0; i < 6; i++) {
+                    let r = ranks[i] * step;
+                    let x = cx + r * Math.cos(angles[i]);
+                    let y = cy + r * Math.sin(angles[i]);
+                    points.push(`${x},${y}`);
+                }
+                return points.join(' ');
+            }
+
+            function createHexGrid(svgId, color) {
+                const svg = document.getElementById(svgId);
+                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
+                const cx = 100, cy = 100;
+                const maxRadius = 60;
+                const step = maxRadius / 6;
+
+                for (let j = 1; j <= 6; j++) {
+                    let r = j * step;
+                    let points = angles.map(a => `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`).join(' ');
+                    let poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    poly.setAttribute('points', points);
+                    poly.setAttribute('fill', 'none');
+                    poly.setAttribute('stroke', color);
+                    poly.setAttribute('stroke-width', j === 5 ? '1' : '0.3');
+                    if (j !== 5) poly.setAttribute('stroke-dasharray', '2,2');
+                    svg.insertBefore(poly, svg.firstChild);
+                }
+
+                angles.forEach(a => {
+                    let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', cx);
+                    line.setAttribute('y1', cy);
+                    line.setAttribute('x2', cx + maxRadius * Math.cos(a));
+                    line.setAttribute('y2', cy + maxRadius * Math.sin(a));
+                    line.setAttribute('stroke', color);
+                    line.setAttribute('stroke-width', '0.5');
+                    svg.insertBefore(line, svg.firstChild);
+                });
+            }
+
+            function updateEmocoes() {
+                let posRanks = [];
+                for (let i = 0; i < 6; i++) {
+                    let rankStr = document.getElementById('rank-pos-' + i).value;
+                    posRanks.push(rankMap[rankStr] || 0);
+                }
+
+                let negRanks = [];
+                for (let i = 0; i < 6; i++) {
+                    let rankStr = document.getElementById('rank-neg-' + i).value;
+                    negRanks.push(rankMap[rankStr] || 0);
+                }
+
+                document.getElementById('poly-pos-fill').setAttribute('points', calculateHexPoints(posRanks));
+                document.getElementById('poly-neg-fill').setAttribute('points', calculateHexPoints(negRanks));
+            }
+
+            // ==========================================
+            // Atualizar Cálculos de CA
+            // ==========================================
+            /*function updateCA() {
+                const defArma = parseInt(document.getElementById('defesa-arma').value) || 0;
+
+                // Tenta resgatar o valor TOTAL da perícia de Luta gerado pelo updateSkills()
+                const lutaInput = document.getElementById('luta-total');
+                const lutaTotal = lutaInput ? (parseInt(lutaInput.value) || 0) : 0;
+
+                const baseCA = 2 + defArma + lutaTotal;
+
+                // Tipos de dano vinculados na tabela CA
+                const cats = ['corte', 'perf', 'efeito', 'impacto'];
+                cats.forEach(cat => {
+                    const bonusEspInput = document.getElementById('ca-bonus-' + cat);
+                    if (bonusEspInput) {
+                        const bonusEsp = parseInt(bonusEspInput.value) || 0;
+                        document.getElementById('ca-total-' + cat).value = baseCA + bonusEsp;
+                    }
+                });
+            }*/
+
+            document.addEventListener('DOMContentLoaded', () => {
+                createHexGrid('svg-pos', 'var(--neon-blue)');
+                createHexGrid('svg-neg', 'var(--neon-blue)');
+
+                document.querySelectorAll('.calc-points').forEach(input => {
+                    updateBonus(input);
+                });
+
+                updateEmocoes(); // Garante que a CA comece calculada
+            });
+    </script>
+</body>
+</html>

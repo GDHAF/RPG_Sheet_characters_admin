@@ -1,0 +1,1843 @@
+﻿
+@{ 
+
+    @using System.Text.Json
+
+    Layout = null;
+    ViewData["Title"] = "Dossiê do Agente";
+
+    @model CriarFichaModel
+
+
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/ficha.css">
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="sheet-container">
+
+        <!-- DOSSIÊ DA SCARE (Oculto por padrão) -->
+        <!-- BOTÕES DE NAVEGAÇÃO / AÇÃO -->
+        <div class="top-nav">
+            <button type="button" class="btn-top" style="margin-right: auto;" onclick="window.location.href='@Url.Action("Listagem", "Agentes")'">Voltar</button>
+            <button class="btn-top" onclick="toggleInfo()">Info</button>
+            <button class="btn-top" onclick="salvarFicha()">Salvar</button>
+            <!--<button class="btn-top" onclick="baixarPDF()" >Baixar PDF</button>-->
+            <button class="btn-top btn-logout" onclick="deletarPersonagem()">Apagar</button>
+        </div>
+
+        <div id="dossier-section" class="dossier-only" style="display: none; margin-bottom: 20px;">
+            <div class="cyber-panel-wrapper" style="height: fit-content">
+                <div class="panel-title" style="color: #ff3366; text-shadow: 0 0 5px #ff3366;">ARQUIVO CONFIDENCIAL - S.C.A.R.E. (ACESSO RESTRITO)</div>
+                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                <div class="cyber-panel-content">
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+                        <!-- Coluna da Foto (Vinda do Banco de Dados) -->
+                        <div style="flex: 0 0 220px; display: flex; flex-direction: column; gap: 10px;">
+                            <div class="dossier-photo-container" style="min-height: 250px;">
+                                <!-- Integração Razor: Renderiza a imagem do MySQL, se existir, senão usa um placeholder -->
+                                <img src="@(Model.Image_Data != null && Model.Image_Data.Length > 0 ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Image_Data)}"
+                                            : "/img/Gamma_Future_Simbolo.png")" alt="@Model.Nome">
+                            </div>
+                            <div style="text-align: center; color: var(--neon-blue-dim); font-size: 12px; font-weight: bold; letter-spacing: 2px;">
+                                ID VISUAL REGISTRADO
+                                <input type="file" name="Imagem" id="image_input" onchange="imgAction()" accept="image/*" class="input-line" style="font-family: var(--font-main);">
+                            </div>
+                        </div>
+
+                        <!-- Coluna de Informações e Relatórios -->
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+                            <div class="header-row">
+                                <div class="header-field" style="flex: 2;">
+                                    <span class="label">NOME DO AGENTE</span>
+                                    <input type="text" class="input-line" id="dossier-nome" placeholder="Sincronizado da ficha..." readonly>
+                                </div>
+                                <div class="header-field" style="flex: 1;">
+                                    <span class="label">PATENTE</span>
+                                    <input type="text" class="input-line" id="dossier-patente" placeholder="Sincronizado da ficha..." readonly>
+                                </div>
+                                <div class="header-field" style="flex: 1;">
+                                    <span class="label">IDADE</span>
+                                    <input type="number" class="input-line" id="dossier-idade" placeholder="Ex: 28">
+                                </div>
+                                <div class="header-field" style="flex: 1;">
+                                    <span class="label">ORIGEM</span>
+                                    <input type="text" class="input-line" id="dossier-origem" placeholder="Sincronizado da ficha..." readonly>
+                                </div>
+                            </div>
+
+                            <div class="header-row">
+                                <div class="header-field" style="flex: 1.5;">
+                                    <span class="label">CÓD. AGENTE / CODINOME</span>
+                                    <input type="text" class="input-line" id="dossier-codinome" value="@Model.Cod_Agente" placeholder="Ex: S-04 / FANTASMA">
+                                </div>
+                                <div class="header-field" style="flex: 1.5;">
+                                    <span class="label">EQUIPE</span>
+                                    <input type="text" class="input-line" id="dossier-equipe" value="@Model.Equipe" placeholder="Ex: Esquadrão Delta">
+                                </div>
+                                <div class="header-field" style="flex: 1;">
+                                    <span class="label">STATUS</span>
+                                    <input type="text" class="input-line" id="dossier-status" value="@Model.Status" placeholder="Sincronizado da ficha..." readonly>
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="label" style="display: block; margin-bottom: 5px;">DESCRIÇÃO DO AGENTE (Físico, Traços Distintos, Psicologia)</span>
+                                <textarea class="dossier-textarea" rows="3" placeholder="Insira as características visíveis e comportamentais do agente...">@Model.Descricao</textarea>
+                            </div>
+
+                            <div>
+                                <span class="label" style="display: block; margin-bottom: 5px;">HISTÓRICO DO AGENTE (Antes e Durante a S.C.A.R.E.)</span>
+                                <textarea class="dossier-textarea" rows="4" placeholder="Eventos pregressos, recrutamento, missões notáveis...">@Model.Historia</textarea>
+                            </div>
+
+                            <div>
+                                <span class="label" style="display: block; margin-bottom: 5px; color: #ff3366;">REGISTRO DE INFRAÇÕES (Conduta e Penalidades)</span>
+                                <textarea class="dossier-textarea" rows="3" placeholder="Quebra de protocolo, insubordinação, danos colaterais..." style="border-color: rgba(255, 51, 102, 0.5);">@Model.Infracoes</textarea>
+                            </div>
+
+                            <div>
+                                <span class="label" style="display: block; margin-bottom: 5px; color: #ffaa00;">ANOTAÇÕES PARA O RESPONSÁVEL / SUPERVISOR</span>
+                                <textarea class="dossier-textarea" rows="3" placeholder="Observações, recomendações, mestres, relações..." style="border-color: rgba(255, 170, 0, 0.5);">@Model.Notes</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cyber-panel-wrapper sheet-only" style="height: fit-content; width: 100%; padding: 0px;">
+            <!-- HEADER -->
+            <div class="cyber-panel-wrapper" style="height: fit-content">
+                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                <div class="cyber-panel-content header-grid">
+                    <div class="header-row">
+                        <div class="header-field" style="flex: 2;">
+                            <span class="label">NOME</span><input type="text" value="@Model.Nome" id="ficha-nome" class="input-line">
+                        </div>
+                        <div class="header-field" style="flex: 0.8;">
+                            <span class="label">NÍVEL FÍSICO</span><input type="number" id="nivel-fisico" class="input-line calc-nvl" style="text-align: center;" value="@Model.Nivel_Fis" oninput="updateSkills()">
+                        </div>
+                        <div class="header-field" style="flex: 0.8;">
+                            <span class="label">NÍVEL PSIÔNICO</span><input type="number" id="nivel-psionico" class="input-line calc-nvl" style="text-align: center;" value="@Model.Nivel_Psi" oninput="updateSkills()">
+                        </div>
+                        <div class="header-field" style="flex: 0.8;">
+                            <span class="label">Idade</span><input type="number" value="@Model.Idade" id="ficha-idade" class="input-line">
+                        </div>
+                    </div>
+                    <div class="header-row">
+                        <div class="header-field">
+                            <span class="label">ORIGEM</span>
+                            <div class="select-wrapper">
+                                <select class="input-line"  id="ficha-origem">
+                                    <option>Adotado pela SCARE</option>
+                                    <option>Estudante</option>
+                                    <option>CLT</option>
+                                    <option>Sem teto</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="header-field">
+                            <span class="label">CLASSE</span>
+                            <div class="select-wrapper">
+                                <select class="input-line" id="ficha-classe">
+                                    <option>Pessoa Normal</option>
+                                    <option>Sensitivo</option>
+                                    <option>Prodígio</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="header-field">
+                            <span class="label">PATENTE</span>
+                            <div class="select-wrapper">
+                                <select class="input-line" id="ficha-patente">
+                                    <option>Carmesim</option>
+                                    <option>Escarlate</option>
+                                    <option>Violeta</option>
+                                    <option>Índigo</option>
+                                    <option>Cobalto</option>
+                                    <option>Marinho</option>
+                                    <option>Celestial</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="header-field">
+                            <span class="label">STATUS</span>
+                            <div class="select-wrapper">
+                                <select class="input-line" id="ficha-status">
+                                    <option>Ativo</option>
+                                    <option>Em Missão</option>
+                                    <option>Inativo</option>
+                                    <option>Morto</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cyber-panel-wrapper sheet-only" style="height: fit-content; width: 100%; padding: 0px;">
+            <!-- LAYOUT TOP: ESQUERDA (Atributos, Vitais, Combate) vs DIREITA (Perícias) -->
+            <div class="layout-top-grid">
+
+                <!-- COLUNA ESQUERDA -->
+                <div class="col-flex">
+
+                    <!-- T20 ATTRIBUTES PANEL -->
+                    <div class="cyber-panel-wrapper" style="height: fit-content">
+                        <div class="panel-title">Atributos Primários</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="attr-t20-container">
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">FOR.</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[0].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-FOR" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">CON.</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[1].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-CON" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">DES.</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[2].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-DES" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">INT.</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[3].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-INT" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title" style="font-size: 13px;">CONH.</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[4].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-CONH" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">CAR.</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[5].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-CAR" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">PREC.<br>CURTA</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[6].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-PRE_C" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">PREC.<br>LONGA</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[7].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-PRE_L" readonly tabindex="-1"></div></div>
+                                </div>
+                                <div class="attr-box-t20">
+                                    <div class="attr-title-wrapper"><div class="attr-title">PROF.</div></div>
+                                    <div class="attr-points"><input type="number" class="calc-points" value="@Model.Atributos[8].Pontos" oninput="updateBonus(this)"></div>
+                                    <div class="attr-foot"><div class="attr-foot-bubble"><span>Bônus</span><input type="text" class="calc-bonus" id="bonus-PROF" readonly tabindex="-1"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- T20 VITALS PANEL -->
+                    <div class="cyber-panel-wrapper" style="height: fit-content">
+                        <div class="panel-title">Recursos Vitais</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="vitals-t20-grid">
+                                <div class="vital-t20-box">
+                                    <div class="vital-max"><input type="text" value="@Model.Recursos[0].Maximo" placeholder="20"><span>Máximos</span></div>
+                                    <div class="vital-current">
+                                        <span class="vital-title">Pontos de Vida</span>
+                                        <input type="text" value="@Model.Recursos[0].Atual" placeholder="20">
+                                        <span class="vital-sub">Atuais</span>
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <div class="vital-max"><input type="text" value="@Model.Recursos[1].Maximo" placeholder="24"><span>Máximos</span></div>
+                                    <div class="vital-current">
+                                        <span class="vital-title">PRP</span>
+                                        <input type="text" value="@Model.Recursos[1].Atual" placeholder="24">
+                                        <span class="vital-sub">Atuais</span>
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <div class="vital-max"><input type="text" value="@Model.Recursos[2].Maximo" placeholder="12"><span>Máximos</span></div>
+                                    <div class="vital-current">
+                                        <span class="vital-title">Pontos Psiônicos</span>
+                                        <input type="text" value="@Model.Recursos[2].Atual" placeholder="12">
+                                        <span class="vital-sub">Atuais</span>
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <div class="vital-max"><input type="text" value="@Model.Recursos[3].Maximo" placeholder="100"><span>Máximos</span></div>
+                                    <div class="vital-current">
+                                        <span class="vital-title" style="color: #ff3366;">Sanidade</span>
+                                        <input type="text" value="@Model.Recursos[3].Atual" placeholder="100">
+                                        <span class="vital-sub">Atuais</span>
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <div class="vital-max"><input type="text" value="@Model.Recursos[4].Maximo" placeholder="9"><span>Base</span></div>
+                                    <div class="vital-current">
+                                        <span class="vital-title" style="color: #ffaa00;">Deslocamento</span>
+                                        <input type="text" value="@Model.Recursos[4].Atual" placeholder="9m">
+                                        <span class="vital-sub">Atual</span>
+                                    </div>
+                                </div>
+                                <div class="vital-t20-box">
+                                    <div class="vital-max"><input type="text" value="@Model.Recursos[5].Maximo" placeholder="10"><span>Base</span></div>
+                                    <div class="vital-current">
+                                        <span class="vital-title" style="color: #00ffaa;">Barreira</span>
+                                        <input type="text" value="@Model.Recursos[5].Atual" placeholder="10">
+                                        <span class="vital-sub">Total</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUBGRID DE COMBATE (Armas e Ações / Ataques e CA) -->
+                    <div class="sub-grid-2" style="flex-grow: 1;">
+                        <!-- Sub-Esquerda: Armas e Ataques -->
+                        <div class="col-flex">
+                            <div class="cyber-panel-wrapper">
+                                <div class="panel-title">Armas e Armaduras</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 10px;">
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Armadura:</span>
+                                            <input type="text" id="in-armadura" value="@Model.Armadura" class="input-line" placeholder="...">
+                                        </div>
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Arma:</span>
+                                            <input type="text" id="in-arma" value="@Model.Arma" class="input-line" placeholder="...">
+                                        </div>
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Defesa da Arma:</span>
+                                            <input type="number" value="@Model.Def_arma" id="defesa-arma" class="input-line" placeholder="0" style="text-align: right;" oninput="updateCA()">
+                                        </div>
+                                        <div style="display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600; width: 120px;">Alcance:</span>
+                                            <input type="text" id="in-alcance" value="@Model.Alcance" class="input-line" placeholder="0" style="text-align: right;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Painel Ataques e Danos alinhado com CA usando mt-auto -->
+                            <div class="cyber-panel-wrapper panel-mt-auto">
+                                <div class="panel-title">Ataques e Danos</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div class="cyber-table">
+                                        <div class="cyber-table-header">
+                                            <span class="cyber-table-cell label" style="flex: 2; color: var(--text-label);">Categoria</span>
+                                            <span class="cyber-table-cell" title="Bônus de Ataque">Bônus Atq.</span>
+                                            <span class="cyber-table-cell" title="Bônus de Dano">Bônus Dano</span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Base</span>
+                                            <span class="cyber-table-cell"><input type="number" value="0" class="input-line" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Corte</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[0].Bonus" class="input-line" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" value="@Model.Ataques[0].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Perfuração</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[1].Bonus" class="input-line" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" value="@Model.Ataques[1].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Efeito</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[2].Bonus" class="input-line" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" value="@Model.Ataques[2].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Impacto</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[3].Bonus" class="input-line" placeholder="0"></span>
+                                            <span class="cyber-table-cell"><input type="text" value="@Model.Ataques[3].Extra" class="input-line" placeholder="+1d6"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-Direita: Ações e CA -->
+                        <div class="col-flex">
+                            <div class="cyber-panel-wrapper">
+                                <div class="panel-title">Ações Rápidas</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div style="display: grid; grid-template-columns: 1fr; gap: 10px; padding-top: 5px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Esquivar</span><input type="text" value="@Model.Esquivar" id="in-esquivar" class="input-line" placeholder="1d20 + 0" style="width: 60%; text-align: right;">
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Atacar</span><input type="text" value="@Model.Atacar" id="in-atacar" class="input-line" placeholder="1d20 + Bônus" style="width: 60%; text-align: right;">
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Interromper</span><input type="text" id="in-interromper" value="@Model.Interromper" class="input-line" placeholder="1d20 + 0" style="width: 60%; text-align: right;">
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-blue-dim); padding-bottom: 5px;">
+                                            <span class="label" style="color: var(--text-label); font-weight: 600;">Dano</span><input type="text" id="in-dano" value="@Model.Dano" class="input-line" placeholder="1d? + Det." style="width: 60%; text-align: right;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Painel CA alinhado com Ataques usando mt-auto -->
+                            <div class="cyber-panel-wrapper panel-mt-auto">
+                                <div class="panel-title">CA (Defesa)</div>
+                                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                                <div class="cyber-panel-content">
+                                    <div class="cyber-table">
+                                        <div class="cyber-table-header">
+                                            <span class="cyber-table-cell label" style="flex: 2; color: var(--text-label);">Categoria</span>
+                                            <span class="cyber-table-cell" title="Bônus Específico">Bônus Esp.</span>
+                                            <span class="cyber-table-cell" title="Total da CA">Total CA</span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Base</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[4].Bonus" id="ca-bonus-base" readonly="true" class="input-line" value="0" oninput="updateCA()"></span>
+                                            <span class="cyber-table-cell"><input type="text" id="ca-total-base" class="input-line total-highlight" style="width: 100%; border: none;" readonly tabindex="-1" value="0"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Corte</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[5].Bonus" id="ca-bonus-corte" class="input-line" value="0" oninput="updateCA()"></span>
+                                            <span class="cyber-table-cell"><input type="text" id="ca-total-corte" class="input-line total-highlight" style="width: 100%; border: none;" readonly tabindex="-1" value="0"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Perfuração</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[6].Bonus" id="ca-bonus-perf" class="input-line" value="0" oninput="updateCA()"></span>
+                                            <span class="cyber-table-cell"><input type="text" id="ca-total-perf" class="input-line total-highlight" style="width: 100%; border: none;" readonly tabindex="-1" value="0"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Efeito</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[7].Bonus" id="ca-bonus-efeito" class="input-line" value="0" oninput="updateCA()"></span>
+                                            <span class="cyber-table-cell"><input type="text" id="ca-total-efeito" class="input-line total-highlight" style="width: 100%; border: none;" readonly tabindex="-1" value="0"></span>
+                                        </div>
+                                        <div class="cyber-table-row">
+                                            <span class="cyber-table-cell label" style="flex: 2;">Impacto</span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[8].Bonus" id="ca-bonus-impacto" class="input-line" value="0" oninput="updateCA()"></span>
+                                            <span class="cyber-table-cell"><input type="text" id="ca-total-impacto" class="input-line total-highlight" style="width: 100%; border: none;" readonly tabindex="-1" value="0"></span>
+                                        </div>
+                                    </div>
+                                    <div class="ca-formula-label">Cálculo: 2 + Defesa Arma + Bônus Esp. + Luta</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUNA DIREITA ESTREITA (Perícias) -->
+                <div class="cyber-panel-wrapper" style="height: 100%;">
+                    <div class="panel-title">Perícias</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="cyber-panel-content">
+                        <div class="cyber-table">
+                            <div class="cyber-table-header" style="justify-content: space-between;">
+                                <span class="cyber-table-cell label" style="flex: 0.5; text-align:left; padding-left: 1%;" title="Treinado">TR</span>
+                                <span class="cyber-table-cell label" style="flex: 1.8; color: var(--text-label);">Perícia</span>
+                                <span class="cyber-table-cell" style="width: 24px; flex: 0.4;" title="Atributo">ATR</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 24px; flex: 0.4;" title="Treino">TRN</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 24px; flex: 0.4;" title="1/2 Nível">1/2N</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 30px; flex: 0.4;" title="Outros">OUT</span>
+                                <span class="math-sign"></span>
+                                <span class="cyber-table-cell" style="width: 30px; flex: 0.4; text-align:center;">TOT</span>
+                            </div>
+
+                            <!-- 27 Linhas de Perícias -->
+                            <div class="skill-row" data-attr="DES" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[0].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Acrobacia <span class="attr-tag">[DES]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[0].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="FOR" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[1].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Ameaça <span class="attr-tag">[FOR]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[1].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CON" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[2].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Atletismo <span class="attr-tag">[CON]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[2].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CAR" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[3].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Diplomacia <span class="attr-tag">[CAR]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[3].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="INT" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[4].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Engenharia <span class="attr-tag">[INT]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[4].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CAR" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[5].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Enganação <span class="attr-tag">[CAR]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[5].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="DES" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[6].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Furtividade <span class="attr-tag">[DES]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[6].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CONH" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[7].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">História <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[7].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="INT" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[8].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Informática <span class="attr-tag">[INT]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[8].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="DES" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[9].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Iniciativa <span class="attr-tag">[DES]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[9].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CAR" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[10].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Intimidação <span class="attr-tag">[CAR]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[10].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CONH" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[11].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Intuição <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[11].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="INT" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[12].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Investigação <span class="attr-tag">[INT]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[12].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CAR" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[13].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Jogatina <span class="attr-tag">[CAR]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[13].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="DES" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[14].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Ladinagem <span class="attr-tag">[DES]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[14].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="FOR" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[15].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Luta <span class="attr-tag">[FOR]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[15].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" id="luta-total" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="PRE_C" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[16].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Manejo <span class="attr-tag">[PR.C]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[16].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CAR" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[17].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Motivar <span class="attr-tag">[CAR]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[17].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="DES" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[18].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Percepção <span class="attr-tag">[DES]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[18].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CONH" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[19].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Pilotagem <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[19].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="PRE_L" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[20].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Pontaria <span class="attr-tag">[PR.L]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[20].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="INT" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[21].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Rastreamento <span class="attr-tag">[INT]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[21].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="DES" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[22].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Reflexos <span class="attr-tag">[DES]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[22].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CON" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[23].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Resistência <span class="attr-tag">[CON]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[23].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CON" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[24].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Resiliência <span class="attr-tag">[CON]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[24].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CONH" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[25].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Ofício <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[25].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CONH" data-nvl="psi"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[26].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Sensib. Psiônica <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[26].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- LAYOUT MID: Emoções e Hexágonos (Y-Align perfeito) -->
+        <div class="layout-mid-grid" id="midgrid">
+
+            <div class="col-flex">
+                <div class="cyber-panel-wrapper sheet-only" style="height: fit-content; width: 100%; padding: 0px;">
+                    <div class="cyber-panel-wrapper">
+                        <div class="panel-title">Emoções Positivas</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="cyber-table">
+                                <div class="cyber-table-header">
+                                    <span class="cyber-table-cell label" style="flex: 1.5; color: var(--text-label);">Emoção</span>
+                                    <span class="cyber-table-cell">Rank</span>
+                                    <span class="cyber-table-cell">Bônus</span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Determinação</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-pos-det" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-pos-det" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Entusiasmo</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-pos-ent" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-pos-ent" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Autopreservação</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-pos-auto" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-pos-auto" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Calma</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-pos-calm" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-pos-calm" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Paciência</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-pos-pac" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-pos-pac" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Altruísmo</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-pos-alt" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-pos-alt" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cyber-panel-wrapper sheet-only" style="height: fit-content; width: 100%; padding: 0px;">
+                    <!-- HEX POSITIVO (Alinhado por Flex Auto Margin) -->
+                    <div class="cyber-panel-wrapper panel-mt-auto" style="min-height: 220px;">
+                        <div class="panel-title">Hex Positivo</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content" style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+                            <svg id="svg-pos" width="100%" height="100%" viewBox="0 0 200 200" style="max-height: 180px; overflow: visible;">
+                                <polygon id="poly-pos-fill" points="" fill="rgba(0,255,170,0.3)" stroke="var(--bonus-pos)" stroke-width="2" />
+                                <text x="100" y="30" text-anchor="middle" class="hex-label">Determinação</text>
+                                <text x="165" y="70" text-anchor="start" class="hex-label">Entusiasmo</text>
+                                <text x="165" y="140" text-anchor="start" class="hex-label">Autopreservação</text>
+                                <text x="100" y="175" text-anchor="middle" class="hex-label">Calma</text>
+                                <text x="35" y="140" text-anchor="end" class="hex-label">Paciência</text>
+                                <text x="35" y="70" text-anchor="end" class="hex-label">Altruísmo</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="col-flex">
+                <div class="cyber-panel-wrapper sheet-only" style="height: fit-content; width: 100%; padding: 0px;">
+                    <div class="cyber-panel-wrapper">
+                        <div class="panel-title">Emoções Negativas</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content">
+                            <div class="cyber-table">
+                                <div class="cyber-table-header">
+                                    <span class="cyber-table-cell label" style="flex: 1.5; color: var(--text-label);">Emoção</span>
+                                    <span class="cyber-table-cell">Rank</span>
+                                    <span class="cyber-table-cell">Bônus</span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Raiva</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-neg-rai" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-neg-rai" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Ansiedade</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-neg-ans" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-neg-ans" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Egoísmo</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-neg-ego" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-neg-ego" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Frieza</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-neg-fri" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-neg-fri" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Obsessão</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-neg-obs" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-neg-obs" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                                <div class="cyber-table-row">
+                                    <span class="cyber-table-cell label" style="flex: 1.5;">Sacrifício</span>
+                                    <span class="cyber-table-cell">
+                                        <div class="rank-select-wrapper">
+                                            <select id="rank-neg-sac" class="input-line rank-select" onchange="updateEmocoes()"><option value="F">F</option><option value="E">E</option><option value="D">D</option><option value="C">C</option><option value="B">B</option><option value="A">A</option><option value="S">S</option></select>
+                                        </div>
+                                    </span>
+                                    <span class="cyber-table-cell"><input type="text" id="bonus-neg-sac" class="input-line" readonly tabindex="-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cyber-panel-wrapper sheet-only" style="height: fit-content; width: 100%; padding: 0px;">
+                    <!-- HEX NEGATIVO (Alinhado por Flex Auto Margin) -->
+                    <div class="cyber-panel-wrapper panel-mt-auto" style="min-height: 220px;">
+                        <div class="panel-title">Hex Negativo</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content" style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+                            <svg id="svg-neg" width="100%" height="100%" viewBox="0 0 200 200" style="max-height: 180px; overflow: visible;">
+                                <polygon id="poly-neg-fill" points="" fill="rgba(255,51,102,0.3)" stroke="var(--bonus-neg)" stroke-width="2" />
+                                <!-- Labels -->
+                                <text x="100" y="30" text-anchor="middle" class="hex-label">Raiva</text>
+                                <text x="165" y="70" text-anchor="start" class="hex-label">Ansiedade</text>
+                                <text x="165" y="140" text-anchor="start" class="hex-label">Egoísmo</text>
+                                <text x="100" y="175" text-anchor="middle" class="hex-label">Frieza</text>
+                                <text x="35" y="140" text-anchor="end" class="hex-label">Obsessão</text>
+                                <text x="35" y="70" text-anchor="end" class="hex-label">Sacrifício</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cyber-panel-wrapper sheet-only" style="height: 100%; width: 100%; padding: 0px;">
+                <div class="col-flex">
+                    <div class="cyber-panel-wrapper" style="min-height: 150px;">
+                        <div class="panel-title">Proficiências</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content scrollable-content">
+                            <textarea placeholder="Armas, armaduras e equipamentos especiais...">@Model.Proficiencia</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Ofícios (Alinhado no fundo junto com os Hexágonos) -->
+                    <div class="cyber-panel-wrapper panel-mt-auto" style="min-height: 220px;">
+                        <div class="panel-title">Ofícios</div>
+                        <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                        <div class="cyber-panel-content scrollable-content">
+                            <textarea placeholder="Ferramentas e especializações...">@Model.Oficio</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        
+
+        <!-- LAYOUT BOTTOM: Abalos, Inventário, Equipamentos (Y-Align perfeito) -->
+        <div class="layout-bot-grid">
+            <div class="cyber-panel-wrapper sheet-only" style="height: 100%; width: 100%; padding: 0px;">
+                <div class="cyber-panel-wrapper" style="min-height: 350px;">
+                    <div class="panel-title">Situações de Abalo (Sanidade)</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="cyber-panel-content scrollable-content">
+                        <div class="cyber-table">
+                            <div class="cyber-table-row" style="border-bottom: 1px solid var(--neon-blue-dim); padding: 5px 0;">
+                                <span class="cyber-table-cell label" style="flex: 4;">
+                                    <textarea rows="2" placeholder="Situação 1..." style="min-height: 35px; font-size: 13px; padding:2px; border:none; border-bottom:1px dashed var(--neon-blue-glow); background:transparent;">@Model.Sanidades[0].Situacao</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">B<br><input type="radio" asp_for="Sanidades[0].Nivel" name="abalo_1" value="B" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">M<br><input type="radio" asp_for="Sanidades[0].Nivel" name="abalo_1" value="M" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">A<br><input type="radio" asp_for="Sanidades[0].Nivel" name="abalo_1" value="A" class="neon-checkbox"></span>
+                            </div>
+                            <div class="cyber-table-row" style="border-bottom: 1px solid var(--neon-blue-dim); padding: 5px 0;">
+                                <span class="cyber-table-cell label" style="flex: 4;">
+                                    <textarea rows="2" placeholder="Situação 2..." style="min-height: 35px; font-size: 13px; padding:2px; border:none; border-bottom:1px dashed var(--neon-blue-glow); background:transparent;">@Model.Sanidades[1].Situacao</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">B<br><input type="radio" asp_for="Sanidades[1].Nivel" name="abalo_2" value="B" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">M<br><input type="radio" asp_for="Sanidades[1].Nivel" name="abalo_2" value="M" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">A<br><input type="radio" asp_for="Sanidades[1].Nivel" name="abalo_2" value="A" class="neon-checkbox"></span>
+                            </div>
+                            <div class="cyber-table-row" style="border-bottom: 1px solid var(--neon-blue-dim); padding: 5px 0;">
+                                <span class="cyber-table-cell label" style="flex: 4;">
+                                    <textarea rows="2" placeholder="Situação 3..." style="min-height: 35px; font-size: 13px; padding:2px; border:none; border-bottom:1px dashed var(--neon-blue-glow); background:transparent;">@Model.Sanidades[2].Situacao</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">B<br><input type="radio" asp_for="Sanidades[2].Nivel" name="abalo_3" value="B" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">M<br><input type="radio" asp_for="Sanidades[2].Nivel" name="abalo_3" value="M" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">A<br><input type="radio" asp_for="Sanidades[2].Nivel" name="abalo_3" value="A" class="neon-checkbox"></span>
+                            </div>
+                            <div class="cyber-table-row" style="border-bottom: 1px solid var(--neon-blue-dim); padding: 5px 0;">
+                                <span class="cyber-table-cell label" style="flex: 4;">
+                                    <textarea rows="2" placeholder="Situação 4..." style="min-height: 35px; font-size: 13px; padding:2px; border:none; border-bottom:1px dashed var(--neon-blue-glow); background:transparent;">@Model.Sanidades[3].Situacao</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">B<br><input type="radio" asp_for="Sanidades[3].Nivel" name="abalo_4" value="B" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">M<br><input type="radio" asp_for="Sanidades[3].Nivel" name="abalo_4" value="M" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">A<br><input type="radio" asp_for="Sanidades[3].Nivel" name="abalo_4" value="A" class="neon-checkbox"></span>
+                            </div>
+                            <div class="cyber-table-row" style="border-bottom: 1px solid var(--neon-blue-dim); padding: 5px 0;">
+                                <span class="cyber-table-cell label" style="flex: 4;">
+                                    <textarea rows="2" placeholder="Situação 5..." style="min-height: 35px; font-size: 13px; padding:2px; border:none; border-bottom:1px dashed var(--neon-blue-glow); background:transparent;">@Model.Sanidades[4].Situacao</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">B<br><input type="radio" asp_for="Sanidades[4].Nivel" name="abalo_5" value="B" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">M<br><input type="radio" asp_for="Sanidades[4].Nivel" name="abalo_5" value="M" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">A<br><input type="radio" asp_for="Sanidades[4].Nivel" name="abalo_5" value="A" class="neon-checkbox"></span>
+                            </div>
+                            <div class="cyber-table-row" style="border-bottom: 1px solid var(--neon-blue-dim); padding: 5px 0;">
+                                <span class="cyber-table-cell label" style="flex: 4;">
+                                    <textarea rows="2" placeholder="Situação 6..." style="min-height: 35px; font-size: 13px; padding:2px; border:none; border-bottom:1px dashed var(--neon-blue-glow); background:transparent;">@Model.Sanidades[5].Situacao</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">B<br><input type="radio" asp_for="Sanidades[5].Nivel" name="abalo_6" value="B" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">M<br><input type="radio" asp_for="Sanidades[5].Nivel" name="abalo_6" value="M" class="neon-checkbox"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5; color:var(--text-label); font-size:9px;">A<br><input type="radio" asp_for="Sanidades[5].Nivel" name="abalo_6" value="A" class="neon-checkbox"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cyber-panel-wrapper sheet-only" style="height: 100%; width: 100%; padding: 0px;">
+                <div class="cyber-panel-wrapper" style="min-height: 350px; max-height: 400px;">
+                    <div class="panel-title">Inventário</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="cyber-panel-content scrollable-content">
+                        <div class="cyber-table" id="inventario-table">
+                            <div class="cyber-table-header" style="flex: 1;">
+                                <span class="cyber-table-cell label" style="flex: 3; color: var(--text-label);">Item Variado</span>
+                                <span class="cyber-table-cell" style="flex: 1;">Qtd</span>
+                                <span class="cyber-table-cell" style="flex: 0.5; font-size:10px;">Excluir</span>
+                            </div>
+
+                            @foreach (var item in Model.Itens.Where(x => x.Tipo == "Inventário"))
+                            {
+                                <div class="cyber-table-row" style="flex: 1; padding: 5px 0; border-bottom: 1px solid var(--neon-blue-dim);">
+                                    <span class="cyber-table-cell" style="flex: 3;"><button type="button" class="item-name-btn" onclick="editInventario(this)">@item.Item</button></span>
+                                    <span class="cyber-table-cell" style="display: none;"><input type="number" readonly value="@item.Id" class="input-line val-id" placeholder="1"></span>
+                                    <span class="cyber-table-cell" style="flex: 1;"><input type="number" readonly value="@item.Qtd" class="input-line val-qtd" placeholder="1"></span>
+                                    <span class="cyber-table-cell" style="flex: 0.5;"><button type="button" class="btn-delete" onclick="deleteRow(this)">✖</button></span>
+                                </div>
+                            }  
+
+                        </div>
+                    </div>
+                    <button class="btn-add" onclick="openNovoInventario()">+ Adicionar Item</button>
+                </div>
+            </div>
+
+            <div class="cyber-panel-wrapper sheet-only" style="height: 100%; width: 100%; padding: 0px;">
+                <div class="cyber-panel-wrapper" style="min-height: 350px; max-height: 400px;">
+                    <div class="panel-title">Equipamentos</div>
+                    <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                    <div class="cyber-panel-content scrollable-content">
+                        <div class="cyber-table" id="equipamentos-table">
+                            <div class="cyber-table-header" , style="flex: 1;">
+                                <span class="cyber-table-cell label" style="flex: 3; color: var(--text-label);">Equipamento</span>
+                                <span class="cyber-table-cell" style="flex: 1;">Qtd</span>
+                                <span class="cyber-table-cell" style="flex: 0.5; font-size:10px;">Excluir</span>
+                            </div>
+                            @foreach (var item in Model.Itens.Where(x => x.Tipo == "Equipamento"))
+                            {
+                                <div class="cyber-table-row" style="flex: 1; padding: 5px 0; border-bottom: 1px solid var(--neon-blue-dim);">
+                                    <span class="cyber-table-cell" style="flex: 3;"><button type="button" class="item-name-btn" onclick="editEquipamento(this)">@item.Item</button></span>
+                                    <span class="cyber-table-cell" style="display:none"><input type="number" readonly value="@item.Id" class="input-line val-id" placeholder="1"></span>
+                                    <span class="cyber-table-cell" style="flex: 1;"><input type="number" readonly value="@item.Qtd" class="input-line val-qtd" placeholder="1"></span>
+                                    <span class="cyber-table-cell" style="flex: 0.5;"><button type="button" class="btn-delete" onclick="deleteRow(this)">✖</button></span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <button class="btn-add" onclick="openNovoEquipamento()">+ Adicionar Equipamento</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================
+             HABILIDADES PANEL (Full Width no Final)
+             ========================================= -->
+        <div class="cyber-panel-wrapper sheet-only" style="height: fit-content; width: 100%; padding: 0px;">
+            <div class="cyber-panel-wrapper" style="margin-top: 10px; min-height: 400px">
+                <div class="panel-title">Habilidades</div>
+                <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+                <div class="cyber-panel-content scrollable-content" id="habilidades-list" style="max-height: 400px;">
+                    <div class="cyber-table" style="min-width: 800px;">
+                        <!-- Evita esmagar campos na horizontal -->
+                        <div class="cyber-table-header">
+                            <span class="cyber-table-cell label" style="flex: 2; color: var(--text-label);">Habilidade</span>
+                            <span class="cyber-table-cell" style="flex: 0.5;">Custo PP</span>
+                            <span class="cyber-table-cell" style="flex: 0.6;">Alcance</span>
+                            <span class="cyber-table-cell" style="flex: 0.8; font-size: 10px;">Aprimorado</span>
+                            <span class="cyber-table-cell label" style="flex: 4; color: var(--text-label); padding-left: 10px;">Efeito</span>
+                            <span class="cyber-table-cell" style="flex: 0.8; font-size: 10px;">Precisa Arma</span>
+                            <span class="cyber-table-cell" style="flex: 0.8; font-size: 10px;">Ação Completa</span>
+                            <span class="cyber-table-cell" style="flex: 0.5; font-size: 10px;">Excluir</span>
+                        </div>
+
+                        <!-- Linhas Iniciais -->
+                        @foreach (var hability in Model.Habilidades)
+                        {
+                            <div class="cyber-table-row" style="padding: 5px 0; border-bottom: 1px solid var(--neon-blue-dim);">
+                                <span class="cyber-table-cell" style="flex: 2;"><button type="button" class="item-name-btn" onclick="editHabilidade(this)">@hability.Habilidade</button></span>
+                                <span class="cyber-table-cell" style="display:none"><input type="number" readonly value="@hability.Id" class="input-line val-id"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5;"><input type="number" readonly value="@hability.Custo" class="input-line val-custo"></span>
+                                <span class="cyber-table-cell" style="flex: 0.6;"><input type="number" readonly class="input-line val-alcance" value="@hability.Alcance" placeholder="m"></span>
+                                <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" readonly checked="@hability.Aprimorado" class="neon-checkbox val-aprimorado"></span>
+                                <span class="cyber-table-cell" style="flex: 4; padding-left: 10px;">
+                                    <textarea rows="3" class="val-efeito" placeholder="Descrição do efeito..." readonly style="min-height: 35px; font-size: 13px; line-height: 1; border: none; border-bottom: 1px solid var(--neon-blue-glow); background: transparent; padding: 2px;">@hability.Efeito</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" checked="@hability.Arma" class="neon-checkbox val-arma"></span>
+                                <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" checked="@hability.Acao" class="neon-checkbox val-acao"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5;"><button type="button" readonly class="btn-delete" onclick="deleteRow(this)">✖</button></span>
+                            </div>
+                        }
+                            
+
+                    </div>
+                </div>
+                <button class="btn-add" onclick="openNovoHabilidade()">+ Adicionar Habilidade</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================
+         MODAIS (POP-UPS)
+         ========================================= -->
+    <!-- Modal Inventário -->
+    <div id="modal-inventario" class="modal-backdrop">
+        <div class="modal-content cyber-panel-wrapper">
+            <div class="panel-title">Adicionar Item</div>
+            <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+            <div class="cyber-panel-content">
+                <form id="form-inventario" onsubmit="saveInventario(event)">
+                    <div class="form-group-modal">
+                        <span class="label">Nome do Item</span>
+                        <input type="text" id="inv-nome" class="input-line" required>
+                        <input type="text" id="inv-id" style="display:none" class="input-line">
+                    </div>
+                    <div class="form-group-modal">
+                        <span class="label">Quantidade</span>
+                        <input type="number" id="inv-qtd" class="input-line" required>
+                    </div>
+                    <div class="form-row-modal" style="margin-top: 10px;">
+                        <button type="button" class="btn-top" style="flex:1;" onclick="closeModal('modal-inventario')">Cancelar</button>
+                        <button type="submit" class="btn-top" style="flex:1; background:var(--neon-blue); color:var(--bg-base);">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Equipamento -->
+    <div id="modal-equipamento" class="modal-backdrop">
+        <div class="modal-content cyber-panel-wrapper">
+            <div class="panel-title">Adicionar Equipamento</div>
+            <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+            <div class="cyber-panel-content">
+                <form id="form-equipamento" onsubmit="saveEquipamento(event)">
+                    <div class="form-group-modal">
+                        <span class="label">Nome do Equipamento</span>
+                        <input type="text" id="eq-nome" class="input-line" required>
+                        <input type="text" id="eq-id" style="display:none" class="input-line">
+                    </div>
+                    <div class="form-group-modal">
+                        <span class="label">Quantidade</span>
+                        <input type="number" id="eq-qtd" class="input-line" required>
+                    </div>
+                    <div class="form-row-modal">
+                        <button type="button" class="btn-top" style="flex:1;" onclick="closeModal('modal-equipamento')">Cancelar</button>
+                        <button type="submit" class="btn-top" style="flex:1; background:var(--neon-blue); color:var(--bg-base);">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Habilidade -->
+    <div id="modal-habilidade" class="modal-backdrop">
+        <div class="modal-content cyber-panel-wrapper" style="max-width: 600px;">
+            <div class="panel-title">Adicionar Habilidade</div>
+            <div class="cyber-panel-bg"><div class="inner-line"></div></div>
+            <div class="cyber-panel-content">
+                <form id="form-habilidade" onsubmit="saveHabilidade(event)">
+                    <div class="form-group-modal">
+                        <span class="label">Nome da Habilidade</span>
+                        <input type="text" id="hab-nome" class="input-line" required>
+                        <input type="text" id="hab-id" style="display:none" class="input-line">
+                    </div>
+                    <div class="form-row-modal">
+                        <div class="form-group-modal" style="flex: 1;">
+                            <span class="label">Custo PP</span>
+                            <input type="number" id="hab-custo" class="input-line" required>
+                        </div>
+                        <div class="form-group-modal" style="flex: 1;">
+                            <span class="label">Alcance (m)</span>
+                            <input type="text" id="hab-alcance" class="input-line" required>
+                        </div>
+                    </div>
+                    <div class="form-group-modal">
+                        <span class="label">Descrição do Efeito</span>
+                        <textarea id="hab-efeito" class="input-line" rows="3" required></textarea>
+                    </div>
+                    <div class="form-row-modal" style="margin-bottom: 15px;">
+                        <span class="radio-col" style="flex:1; font-size:12px;">APRIMORADO<input type="checkbox" id="hab-aprimorado" class="neon-checkbox"></span>
+                        <span class="radio-col" style="flex:1; font-size:12px;">PRECISA ARMA<input type="checkbox" id="hab-arma" class="neon-checkbox" checked></span>
+                        <span class="radio-col" style="flex:1; font-size:12px;">AÇÃO COMPLETA<input type="checkbox" id="hab-acao" class="neon-checkbox"></span>
+                    </div>
+                    <div class="form-row-modal">
+                        <button type="button" class="btn-top" style="flex:1;" onclick="closeModal('modal-habilidade')">Cancelar</button>
+                        <button type="submit" class="btn-top" style="flex:1; background:var(--neon-blue); color:var(--bg-base);">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPT PARA CÁLCULO E LÓGICA GERAL -->
+    <script>
+
+            let isInfoMode = false;
+            let editRowRef = null; // Referência global para a linha sendo editada
+            let imgSave = false;
+
+            document.getElementById("ficha-origem").value = "@Model.Origem";
+            document.getElementById("ficha-classe").value = "@Model.Classe";
+            document.getElementById("ficha-patente").value = "@Model.Patente";
+            document.getElementById("ficha-status").value = "@Model.Status";
+
+            document.getElementById("rank-pos-det").value = "@Model.Emocoes[0].Ranking";
+            document.getElementById("rank-pos-ent").value = "@Model.Emocoes[1].Ranking";
+            document.getElementById("rank-pos-auto").value = "@Model.Emocoes[2].Ranking";
+            document.getElementById("rank-pos-calm").value = "@Model.Emocoes[3].Ranking";
+            document.getElementById("rank-pos-pac").value = "@Model.Emocoes[4].Ranking";
+            document.getElementById("rank-pos-alt").value = "@Model.Emocoes[5].Ranking";
+            document.getElementById("rank-neg-rai").value = "@Model.Emocoes[6].Ranking";
+            document.getElementById("rank-neg-ans").value = "@Model.Emocoes[7].Ranking";
+            document.getElementById("rank-neg-ego").value = "@Model.Emocoes[8].Ranking";
+            document.getElementById("rank-neg-fri").value = "@Model.Emocoes[9].Ranking";
+            document.getElementById("rank-neg-obs").value = "@Model.Emocoes[10].Ranking";
+            document.getElementById("rank-neg-sac").value = "@Model.Emocoes[11].Ranking";
+
+
+            function toggleInfo() {
+                isInfoMode = !isInfoMode;
+                const sheetElements = document.querySelectorAll('.sheet-only');
+                const dossierElements = document.querySelectorAll('.dossier-only');
+
+                if (isInfoMode) {
+                    sheetElements.forEach(el => el.style.display = 'none');
+                    dossierElements.forEach(el => el.style.display = 'block');
+                    syncDossier(); // Atualiza os campos antes de mostrar
+                } else {
+                    sheetElements.forEach(el => el.style.display = '');
+                    dossierElements.forEach(el => el.style.display = 'none');
+                }
+            }
+
+            // Sincroniza campos básicos da ficha com o dossiê (Leitura apenas)
+            function syncDossier() {
+                document.getElementById('dossier-nome').value = document.getElementById('ficha-nome').value;
+                document.getElementById('dossier-origem').value = document.getElementById('ficha-origem').value;
+                document.getElementById('dossier-patente').value = document.getElementById('ficha-patente').value;
+                document.getElementById('dossier-idade').value = document.getElementById('ficha-idade').value;
+                document.getElementById('dossier-status').value = document.getElementById('ficha-status').value;
+            }
+
+            // ==========================================
+            // Lógica de Modais (Pop-ups)
+            // ==========================================
+            function openModal(id) {
+                document.getElementById(id).style.display = 'flex';
+            }
+
+            function closeModal(id) {
+                document.getElementById(id).style.display = 'none';
+            }
+
+            // Abertura para edição do Modais
+            function openNovoInventario() {
+                editRowRef = null;
+                document.getElementById('form-inventario').reset();
+                document.getElementById('inv-id').value = "0";
+                openModal('modal-inventario');
+            }
+            function editInventario(btn) {
+                editRowRef = btn.closest('.cyber-table-row');
+                document.getElementById('inv-nome').value = btn.innerText;
+                document.getElementById('inv-id').value = editRowRef.querySelector('.val-id').value;
+                document.getElementById('inv-qtd').value = editRowRef.querySelector('.val-qtd').value;
+                openModal('modal-inventario');
+            }
+            function openNovoEquipamento() {
+                editRowRef = null;
+                document.getElementById('form-equipamento').reset();
+                document.getElementById('eq-id').value = "0";
+                openModal('modal-equipamento');
+            }
+            function editEquipamento(btn) {
+                editRowRef = btn.closest('.cyber-table-row');
+                document.getElementById('eq-nome').value = btn.innerText;
+                document.getElementById('eq-id').value = editRowRef.querySelector('.val-id').value;
+                document.getElementById('eq-qtd').value = editRowRef.querySelector('.val-qtd').value;
+                openModal('modal-equipamento');
+            }
+            function openNovoHabilidade() {
+                editRowRef = null;
+                document.getElementById('form-habilidade').reset();
+                document.getElementById('hab-id').value = "0";
+                openModal('modal-habilidade');
+            }
+            function editHabilidade(btn) {
+                editRowRef = btn.closest('.cyber-table-row');
+                document.getElementById('hab-nome').value = btn.innerText;
+                document.getElementById('hab-id').value = editRowRef.querySelector('.val-id').value;
+                document.getElementById('hab-custo').value = editRowRef.querySelector('.val-custo').value;
+                document.getElementById('hab-alcance').value = editRowRef.querySelector('.val-alcance').value;
+                document.getElementById('hab-efeito').value = editRowRef.querySelector('.val-efeito').value;
+
+                document.getElementById('hab-aprimorado').checked = (editRowRef.querySelector('.val-aprimorado').checked);
+                document.getElementById('hab-arma').checked = (editRowRef.querySelector('.val-arma').checked);
+                document.getElementById('hab-acao').checked = (editRowRef.querySelector('.val-acao').checked);
+
+                openModal('modal-habilidade');
+            }
+
+
+            // ==========================================
+            // Lógica de Atributos e Perícias (T20)
+            // ==========================================
+            function updateBonus(inputElement) {
+                const points = parseInt(inputElement.value) || 0;
+                const bonus = Math.floor((points - 10) / 2);
+
+                const attrBox = inputElement.closest('.attr-box-t20');
+                const bonusInput = attrBox.querySelector('.calc-bonus');
+
+                if (bonus > 0) {
+                    bonusInput.value = '+' + bonus;
+                    bonusInput.style.color = 'var(--bonus-pos)';
+                    bonusInput.style.textShadow = '0 0 5px rgba(0, 255, 170, 0.5)';
+                } else if (bonus < 0) {
+                    bonusInput.value = bonus;
+                    bonusInput.style.color = 'var(--bonus-neg)';
+                    bonusInput.style.textShadow = '0 0 5px rgba(255, 51, 102, 0.5)';
+                } else {
+                    bonusInput.value = '0';
+                    bonusInput.style.color = '#ffffff';
+                    bonusInput.style.textShadow = 'none';
+                }
+
+                updateSkills();
+            }
+
+            function updateSkills() {
+                const nFis = parseInt(document.getElementById('nivel-fisico').value) || 0;
+                const nPsi = parseInt(document.getElementById('nivel-psionico').value) || 0;
+                const halfFis = Math.floor(nFis / 2);
+                const halfPsi = Math.floor(nPsi / 2);
+
+                const getBonus = (id) => parseInt(document.getElementById(id).value) || 0;
+
+                const attrBonuses = {
+                    'FOR': getBonus('bonus-FOR'), 'CON': getBonus('bonus-CON'),
+                    'DES': getBonus('bonus-DES'), 'INT': getBonus('bonus-INT'),
+                    'CONH': getBonus('bonus-CONH'), 'CAR': getBonus('bonus-CAR'),
+                    'PRE_C': getBonus('bonus-PRE_C'), 'PRE_L': getBonus('bonus-PRE_L'),
+                    'PROF': getBonus('bonus-PROF')
+                };
+
+                const skillRows = document.querySelectorAll('.skill-row');
+                skillRows.forEach(row => {
+                    const attrKey = row.getAttribute('data-attr');
+                    const nvlType = row.getAttribute('data-nvl');
+
+                    const isTrained = row.querySelector('.skill-tr').checked;
+                    const outrosVal = parseInt(row.querySelector('.skill-outros').value) || 0;
+
+                    const valAttr = attrBonuses[attrKey] || 0;
+                    const valTreino = isTrained ? 2 : 0;
+                    const valNvl = (nvlType === 'psi') ? halfPsi : halfFis;
+
+                    const total = valAttr + valTreino + valNvl + outrosVal;
+
+                    row.querySelector('.skill-attr').value = valAttr > 0 ? '+' + valAttr : valAttr;
+                    row.querySelector('.skill-treino').value = '+' + valTreino;
+                    row.querySelector('.skill-nvl').value = '+' + valNvl;
+                    row.querySelector('.skill-total').value = total;
+                });
+
+                updateCA();
+            }
+
+            function updateCA() {
+                const defArma = parseInt(document.getElementById('defesa-arma').value) || 0;
+                const lutaTotal = parseInt(document.getElementById('luta-total').value) || 0;
+                const baseCA = 2 + defArma + lutaTotal;
+
+                const cats = ['corte', 'perf', 'efeito', 'impacto'];
+                cats.forEach(cat => {
+                    const bonus = parseInt(document.getElementById('ca-bonus-' + cat).value) || 0;
+                    document.getElementById('ca-total-' + cat).value = baseCA + bonus;
+                });
+            }
+
+            // ==========================================
+            // Lógica de Emoções (Rank -> Bonus -> Hexágono)
+            // ==========================================
+            const rankMap = { 'S': 6, 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1, 'F': 0 };
+
+            function calculateHexPoints(ranks) {
+                // Ordem Ângulos: Top(-90), TR(-30), BR(30), Bot(90), BL(150), TL(210)
+                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
+                const cx = 100, cy = 100;
+                const maxRadius = 60;
+                const step = maxRadius / 6;
+
+                let points = [];
+                for (let i = 0; i < 6; i++) {
+                    let r = ranks[i] * step;
+                    let x = cx + r * Math.cos(angles[i]);
+                    let y = cy + r * Math.sin(angles[i]);
+                    points.push(`${x},${y}`);
+                }
+                return points.join(' ');
+            }
+
+            function createHexGrid(svgId, color) {
+                const svg = document.getElementById(svgId);
+                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
+                const cx = 100, cy = 100;
+                const maxRadius = 60;
+                const step = maxRadius / 6;
+
+                for (let j = 1; j <= 6; j++) {
+                    let r = j * step;
+                    let points = angles.map(a => `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`).join(' ');
+                    let poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    poly.setAttribute('points', points);
+                    poly.setAttribute('fill', 'none');
+                    poly.setAttribute('stroke', color);
+                    poly.setAttribute('stroke-width', j === 5 ? '1' : '0.3');
+                    if (j !== 5) poly.setAttribute('stroke-dasharray', '2,2');
+                    svg.insertBefore(poly, svg.firstChild);
+                }
+
+                angles.forEach(a => {
+                    let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', cx);
+                    line.setAttribute('y1', cy);
+                    line.setAttribute('x2', cx + maxRadius * Math.cos(a));
+                    line.setAttribute('y2', cy + maxRadius * Math.sin(a));
+                    line.setAttribute('stroke', color);
+                    line.setAttribute('stroke-width', '0.5');
+                    svg.insertBefore(line, svg.firstChild);
+                });
+            }
+
+            function updateEmocoes() {
+                const posEmotions = ['det', 'ent', 'auto', 'calm', 'pac', 'alt'];
+                const negEmotions = ['rai', 'ans', 'ego', 'fri', 'obs', 'sac'];
+
+                let posRanks = [];
+                posEmotions.forEach(emo => {
+                    let rankStr = document.getElementById('rank-pos-' + emo).value;
+                    let val = rankMap[rankStr] || 0;
+                    document.getElementById('bonus-pos-' + emo).value = '+' + val;
+                    posRanks.push(val);
+                });
+
+                let negRanks = [];
+                negEmotions.forEach(emo => {
+                    let rankStr = document.getElementById('rank-neg-' + emo).value;
+                    let val = rankMap[rankStr] || 0;
+                    document.getElementById('bonus-neg-' + emo).value = '+' + val;
+                    negRanks.push(val);
+                });
+
+                document.getElementById('poly-pos-fill').setAttribute('points', calculateHexPoints(posRanks));
+                document.getElementById('poly-neg-fill').setAttribute('points', calculateHexPoints(negRanks));
+            }
+
+            // ==========================================
+            // Inicialização Global
+            // ==========================================
+            document.addEventListener('DOMContentLoaded', () => {
+                createHexGrid('svg-pos', 'var(--neon-blue)');
+                createHexGrid('svg-neg', 'var(--neon-blue)');
+
+                document.querySelectorAll('.calc-points').forEach(input => {
+                    updateBonus(input);
+                });
+
+                updateEmocoes();
+                updateCA();
+                inicializarSanidade();
+            });
+
+            // ==========================================
+            // Funções de Adição de Linhas
+            // ==========================================
+            function addEquipamentoRow() {
+                const table = document.querySelector('#equipamentos-table');
+                const newRow = document.createElement('div');
+                newRow.className = 'cyber-table-row';
+                newRow.style.padding = '5px 0';
+                newRow.style.borderBottom = '1px solid var(--neon-blue-dim)';
+                newRow.innerHTML = `
+                            <span class="cyber-table-cell" style="flex: 3;"><input type="text" class="input-line" style="text-align: left;" placeholder="Nome do item"></span>
+                            <span class="cyber-table-cell" style="flex: 1;"><input type="number" class="input-line" placeholder="1"></span>
+                        `;
+                table.appendChild(newRow);
+                table.parentElement.scrollTop = table.parentElement.scrollHeight;
+            }
+
+            function addInventarioRow() {
+                const table = document.querySelector('#inventario-table');
+                const newRow = document.createElement('div');
+                newRow.className = 'cyber-table-row';
+                newRow.style.padding = '5px 0';
+                newRow.style.borderBottom = '1px solid var(--neon-blue-dim)';
+                newRow.innerHTML = `
+                            <span class="cyber-table-cell" style="flex: 3;"><input type="text" class="input-line" style="text-align: left;" placeholder="Material, documento..."></span>
+                            <span class="cyber-table-cell" style="flex: 1;"><input type="number" class="input-line" placeholder="1"></span>
+                        `;
+                table.appendChild(newRow);
+                table.parentElement.scrollTop = table.parentElement.scrollHeight;
+            }
+
+            function addHabilidadeRow() {
+                const table = document.querySelector('#habilidades-list');
+                const newRow = document.createElement('div');
+                newRow.className = 'cyber-table-row';
+                newRow.style.padding = '5px 0';
+                newRow.style.borderBottom = '1px solid var(--neon-blue-dim)';
+                newRow.innerHTML = `
+                            <span class="cyber-table-cell" style="flex: 2;"><input type="text" class="input-line" style="text-align: left;" placeholder="Nome da Habilidade"></span>
+                            <span class="cyber-table-cell" style="flex: 0.5;"><input type="number" class="input-line"></span>
+                            <span class="cyber-table-cell" style="flex: 0.6;"><input type="text" class="input-line" placeholder="m"></span>
+                            <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" class="neon-checkbox"></span>
+                            <span class="cyber-table-cell" style="flex: 4; padding-left: 10px;">
+                                <textarea rows="2" placeholder="Descrição do efeito..." style="min-height: 35px; font-size: 13px; line-height: 1.2; border: none; border-bottom: 1px dashed var(--neon-blue-glow); background: transparent; padding: 2px;"></textarea>
+                            </span>
+                            <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" class="neon-checkbox"></span>
+                            <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" class="neon-checkbox"></span>
+                        `;
+                table.appendChild(newRow);
+                table.parentElement.scrollTop = table.parentElement.scrollHeight;
+            }
+
+            function inicializarSanidade() {
+                const niveis = [
+                    @Html.Raw(JsonSerializer.Serialize(Model.Sanidades[0].Nivel)),
+                    @Html.Raw(JsonSerializer.Serialize(Model.Sanidades[1].Nivel)),
+                    @Html.Raw(JsonSerializer.Serialize(Model.Sanidades[2].Nivel)),
+                    @Html.Raw(JsonSerializer.Serialize(Model.Sanidades[3].Nivel)),
+                    @Html.Raw(JsonSerializer.Serialize(Model.Sanidades[4].Nivel)),
+                    @Html.Raw(JsonSerializer.Serialize(Model.Sanidades[5].Nivel))
+                ];
+
+                niveis.forEach((nivel, index) => {
+                    const radio = document.querySelector(
+                        `input[name="abalo_${index + 1}"][value="${nivel}"]`
+                    );
+
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                });
+            }
+
+            function imgAction(){
+                imgSave = true;
+            }
+
+            async function salvarFicha() {
+                let base64 = null;
+                let fileName = null;
+
+                // Configurar salvamento da Imagem
+                if (typeof imgSave !== 'undefined' && imgSave){
+                    const imgInput = document.getElementById('image_input');
+                    if(imgInput && imgInput.files.length > 0){
+                        const file = imgInput.files[0];
+                        fileName = file.name;
+
+                        base64 = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(file);
+                            reader.onload = () => {
+                                resolve(reader.result.split(',')[1]);
+                            };
+                            reader.onerror = error => reject(error);
+                        });
+                    }
+                }else{
+                    fileName = "@Model.Image_Name";
+                    let rawBase64 = "@Html.Raw(Model.Image_Data != null ? Convert.ToBase64String(Model.Image_Data) : "")";
+                    
+                    base64 = rawBase64 === "" ? null : rawBase64;
+                }
+
+                // 1. Coletar IDs Básicos e Header
+                const data = {
+                    Id: @(Model.Id ?? 0), // Pega o ID diretamente do Razor
+                    Nome: document.getElementById('ficha-nome').value,
+                    Cod_Agente: document.getElementById('dossier-codinome').value,
+                    Nivel_Fis: parseInt(document.getElementById('nivel-fisico').value) || 0,
+                    Nivel_Psi: parseInt(document.getElementById('nivel-psionico').value) || 0,
+                    Origem: document.getElementById('ficha-origem').value,
+                    Idade: parseInt(document.getElementById('ficha-idade').value) || 0,
+                    Classe: document.getElementById('ficha-classe').value,
+                    Patente: document.getElementById('ficha-patente').value,
+                    Equipe: document.getElementById('dossier-equipe').value,
+                    Status: document.getElementById('ficha-status').value,
+                    Image_Name:fileName,
+                    Image_Data: base64,
+
+                    // Textareas do Dossiê e Proficiências
+                    Descricao: document.querySelectorAll('.dossier-textarea')[0].value,
+                    Historia: document.querySelectorAll('.dossier-textarea')[1].value,
+                    Infracoes: document.querySelectorAll('.dossier-textarea')[2].value,
+                    Notes: document.querySelectorAll('.dossier-textarea')[3].value,
+                    Proficiencia: document.querySelectorAll('.scrollable-content textarea')[0].value,
+                    Oficio: document.querySelectorAll('.scrollable-content textarea')[1].value,
+
+                    // Equipamentos e Combate (Buscando pela estrutura de inputs do painel)
+                    Armadura: document.getElementById('in-armadura').value,
+                    Arma: document.getElementById('in-arma').value,
+                    Def_arma: parseInt(document.getElementById('defesa-arma').value) || 0,
+                    Alcance: parseInt(document.getElementById('in-alcance').value) || 0,
+                    Esquivar: document.getElementById('in-esquivar').value,
+                    Atacar: document.getElementById('in-atacar').value,
+                    Interromper: document.getElementById('in-interromper').value,
+                    Dano: document.getElementById('in-dano').value,
+
+                    // Inicializando Listas
+                    Atributos: [],
+                    Pericias: [],
+                    Recursos: [],
+                    Ataques: [],
+                    Emocoes: [],
+                    Sanidades: []
+                };
+
+                // 2. Coletar Atributos
+                const atributosBoxes = document.querySelectorAll('.attr-box-t20');
+                const atributosNomes = ["FOR", "CON", "DES", "INT", "CONH", "CAR", "PRE_C", "PRE_L", "PROF"];
+                atributosBoxes.forEach((box, index) => {
+                    data.Atributos.push({
+                        Atributo: atributosNomes[index],
+                        Pontos: parseInt(box.querySelector('.calc-points').value) || 0
+                    });
+                });
+
+                // 3. Coletar Perícias
+                document.querySelectorAll('.skill-row').forEach(row => {
+                    data.Pericias.push({
+                        Pericia: row.querySelector('.cell-name').childNodes[0].nodeValue.trim(),
+                        Treinado: row.querySelector('.skill-tr').checked,
+                        Outros: parseInt(row.querySelector('.skill-outros').value) || 0
+                    });
+                });
+
+                // 4. Coletar Recursos Vitais
+                const recursosNomes = ["Vida", "PRP", "Pontos Psiônicos", "Sanidade", "Deslocamento", "Barreira"];
+                const recursosBoxes = document.querySelectorAll('.vital-t20-box');
+                recursosBoxes.forEach((box, index) => {
+                    data.Recursos.push({
+                        TipoRecurso: recursosNomes[index],
+                        Maximo: parseInt(box.querySelector('.vital-max input').value) || 0,
+                        Atual: parseInt(box.querySelector('.vital-current input').value) || 0
+                    });
+                });
+
+                // 5. Coletar Ataques (Base, Corte, Perfuração, Efeito, Impacto)
+                const ataquesRows = document.querySelectorAll('.panel-mt-auto .cyber-table')[0].querySelectorAll('.cyber-table-row');
+                const ataquesNomes = ["Base", "Corte", "Perfuração", "Efeito", "Impacto"];
+                ataquesRows.forEach((row, index) => {
+                    const inputs = row.querySelectorAll('input');
+                    if(ataquesNomes[index] !== "Base"){
+                        data.Ataques.push({
+                            Categoria: "Ataque",
+                            Tipo: ataquesNomes[index],
+                            Bonus: parseInt(inputs[0].value) || 0,
+                            Extra: inputs[1]?.value || ''
+                        });
+                    };
+                });
+                const caNomes = ["Base", "Corte", "Perfuração", "Efeito", "Impacto"];
+                // Coletar Defesa CA
+                const caRows = document.querySelectorAll('.panel-mt-auto .cyber-table')[1].querySelectorAll('.cyber-table-row');
+                caRows.forEach((row, index) => {
+                    const inputs = row.querySelectorAll('input');
+                    data.Ataques.push({
+                        Categoria: "CA",
+                        Tipo: caNomes[index],
+                        Bonus: parseInt(inputs[0].value) || 0,
+                        Extra: ''
+                    });
+                });
+
+                // 6. Coletar Emoções
+                const emocoesNomes = [
+                    { id: 'rank-pos-det', nome: 'Determinação' }, { id: 'rank-pos-ent', nome: 'Entusiasmo' },
+                    { id: 'rank-pos-auto', nome: 'Autopreservação' }, { id: 'rank-pos-calm', nome: 'Calma' },
+                    { id: 'rank-pos-pac', nome: 'Paciência' }, { id: 'rank-pos-alt', nome: 'Altruísmo' },
+                    { id: 'rank-neg-rai', nome: 'Raiva' }, { id: 'rank-neg-ans', nome: 'Ansiedade' },
+                    { id: 'rank-neg-ego', nome: 'Egoísmo' }, { id: 'rank-neg-fri', nome: 'Frieza' },
+                    { id: 'rank-neg-obs', nome: 'Obsessão' }, { id: 'rank-neg-sac', nome: 'Sacrifício' }
+                ];
+                emocoesNomes.forEach(emo => {
+                    data.Emocoes.push({
+                        Emocao: emo.nome,
+                        Ranking: document.getElementById(emo.id).value
+                    });
+                });
+
+                // 7. Coletar Sanidade (Abalos)
+
+                const sanidadeRowsDOM = document.querySelectorAll('.layout-bot-grid .cyber-panel-wrapper:first-child .cyber-table-row');
+
+                for (let i = 0; i < 6; i++) {
+                    const row = sanidadeRowsDOM[i];
+                    if (row) {
+                        const checkedRadio = row.querySelector(`input[type="radio"]:checked`);
+                        const textarea = row.querySelector('textarea');
+
+                        data.Sanidades.push({
+                            Situacao: textarea ? textarea.value : '',
+                            Nivel: checkedRadio ? checkedRadio.value : 'B'
+                        });
+                    }
+                }
+
+                // Disparar a requisição PUT
+                try {
+                    const response = await fetch('/Agentes/Atualizar', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        alert('Ficha salva com sucesso!');
+                    } else {
+                        const errorText = await response.text();
+                        alert('Erro ao salvar ficha: ' + errorText);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Falha na comunicação com o servidor.');
+                }
+            }
+
+            // ==========================================
+            // Funções POST dos Modais (Inserção Real)
+            // ==========================================
+
+            async function saveInventario(e) {
+                e.preventDefault();
+
+                const idPersonagemAtual = @(Model.Id ?? 0);
+                if (idPersonagemAtual === 0) {
+                    alert("Salve a ficha do personagem pela primeira vez antes de gerenciar itens.");
+                    return;
+                }
+
+                const btnSubmit = e.target.querySelector('button[type="submit"]');
+                btnSubmit.disabled = true;
+
+                // Pegamos o ID do item para saber se é Adição ou Edição
+                const idItem = parseInt(document.getElementById('inv-id').value) || 0;
+                const nomeItem = document.getElementById('inv-nome').value;
+                const qtdItem = document.getElementById('inv-qtd').value;
+
+                const payload = {
+                    Tipo: "Inventário",
+                    Item: nomeItem,
+                    Qtd: parseInt(qtdItem) || 1
+                };
+
+                try {
+                    let response;
+                    if (idItem === 0) {
+                        // ADICIONAR (POST)
+                        response = await fetch(`/Agentes/AdicionarItem/${idPersonagemAtual}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } else {
+                        // EDITAR (PUT)
+                        response = await fetch(`/Agentes/EditarItem/${idItem}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    }
+
+                    if (response.ok) {
+                        if (idItem === 0) {
+                            const data = await response.json();
+                            const table = document.querySelector('#inventario-table');
+                            const newRow = document.createElement('div');
+                            newRow.className = 'cyber-table-row';
+                            newRow.style.padding = '5px 0';
+                            newRow.style.borderBottom = '1px solid var(--neon-blue-dim)';
+                            newRow.innerHTML = `
+                                <span class="cyber-table-cell" style="flex: 3;"><button type="button" class="item-name-btn" onclick="editInventario(this)">${nomeItem}</button></span>
+                                <span class="cyber-table-cell" style="display:none"><input type="number" readonly value="${data.id}" class="input-line val-id"></span>
+                                <span class="cyber-table-cell" style="flex: 1;"><input type="number" readonly value="${payload.Qtd}" class="input-line val-qtd"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5;"><button type="button" class="btn-delete" onclick="deleteRow(this)">✖</button></span>
+                            `;
+                            table.appendChild(newRow);
+                        } else {
+                            // Se foi edição, apenas alteramos os valores na linha que já existe
+                            editRowRef.querySelector('.item-name-btn').innerText = nomeItem;
+                            editRowRef.querySelector('.val-qtd').value = payload.Qtd;
+                        }
+                        closeModal('modal-inventario');
+                    } else {
+                        const err = await response.text();
+                        alert("Erro ao salvar item: " + err);
+                    }
+                } catch (err) {
+                    alert("Falha na comunicação com o servidor.");
+                } finally {
+                    btnSubmit.disabled = false;
+                }
+            }
+
+            async function saveEquipamento(e) {
+                e.preventDefault();
+
+                const idPersonagemAtual = @(Model.Id ?? 0);
+                if (idPersonagemAtual === 0) return alert("Salve a ficha primeiro.");
+
+                const btnSubmit = e.target.querySelector('button[type="submit"]');
+                btnSubmit.disabled = true;
+
+                const idItem = parseInt(document.getElementById('eq-id').value) || 0;
+                const nomeItem = document.getElementById('eq-nome').value;
+                const qtdItem = document.getElementById('eq-qtd').value;
+
+                const payload = { Tipo: "Equipamento", Item: nomeItem, Qtd: parseInt(qtdItem) || 1 };
+
+                try {
+                    let response;
+                    if (idItem === 0) {
+                        response = await fetch(`/Agentes/AdicionarItem/${idPersonagemAtual}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } else {
+                        response = await fetch(`/Agentes/EditarItem/${idItem}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    }
+
+                    if (response.ok) {
+                        if (idItem === 0) {
+                            const data = await response.json();
+                            const table = document.querySelector('#equipamentos-table');
+                            const newRow = document.createElement('div');
+                            newRow.className = 'cyber-table-row';
+                            newRow.style.padding = '5px 0';
+                            newRow.style.borderBottom = '1px solid var(--neon-blue-dim)';
+                            newRow.innerHTML = `
+                                <span class="cyber-table-cell" style="flex: 3;"><button type="button" class="item-name-btn" onclick="editEquipamento(this)">${nomeItem}</button></span>
+                                <span class="cyber-table-cell" style="display:none"><input type="number" readonly value="${data.id}" class="input-line val-id"></span>
+                                <span class="cyber-table-cell" style="flex: 1;"><input type="number" readonly value="${payload.Qtd}" class="input-line val-qtd"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5;"><button type="button" class="btn-delete" onclick="deleteRow(this)">✖</button></span>
+                            `;
+                            table.appendChild(newRow);
+                        } else {
+                            editRowRef.querySelector('.item-name-btn').innerText = nomeItem;
+                            editRowRef.querySelector('.val-qtd').value = payload.Qtd;
+                        }
+                        closeModal('modal-equipamento');
+                    } else {
+                        alert("Erro ao salvar equipamento: " + await response.text());
+                    }
+                } catch (err) {
+                    alert("Falha na comunicação com o servidor.");
+                } finally {
+                    btnSubmit.disabled = false;
+                }
+            }
+
+            async function saveHabilidade(e) {
+                e.preventDefault();
+
+                const idPersonagemAtual = @(Model.Id ?? 0);
+                if (idPersonagemAtual === 0) return alert("Salve a ficha primeiro.");
+
+                const btnSubmit = e.target.querySelector('button[type="submit"]');
+                btnSubmit.disabled = true;
+
+                const idHabilidade = parseInt(document.getElementById('hab-id').value) || 0;
+                const payload = {
+                    Habilidade: document.getElementById('hab-nome').value,
+                    Custo: parseInt(document.getElementById('hab-custo').value) || 0,
+                    Alcance: parseInt(document.getElementById('hab-alcance').value) || 0,
+                    Efeito: document.getElementById('hab-efeito').value,
+                    Aprimorado: document.getElementById('hab-aprimorado').checked,
+                    Arma: document.getElementById('hab-arma').checked,
+                    Acao: document.getElementById('hab-acao').checked
+                };
+
+                try {
+                    let response;
+                    if (idHabilidade === 0) {
+                        response = await fetch(`/Agentes/AdicionarHabilidade/${idPersonagemAtual}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } else {
+                        response = await fetch(`/Agentes/EditarHabilidade/${idHabilidade}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    }
+
+                    if (response.ok) {
+                        const aprimoradoCheck = payload.Aprimorado ? "checked" : "";
+                        const armaCheck = payload.Arma ? "checked" : "";
+                        const acaoCheck = payload.Acao ? "checked" : "";
+
+                        if (idHabilidade === 0) {
+                            const data = await response.json();
+                            const table = document.querySelector('#habilidades-list .cyber-table');
+                            const newRow = document.createElement('div');
+                            newRow.className = 'cyber-table-row';
+                            newRow.style.padding = '5px 0';
+                            newRow.style.borderBottom = '1px solid var(--neon-blue-dim)';
+
+                            newRow.innerHTML = `
+                                <span class="cyber-table-cell" style="flex: 2;"><button type="button" class="item-name-btn" onclick="editHabilidade(this)">${payload.Habilidade}</button></span>
+                                <span class="cyber-table-cell" style="display:none"><input type="number" readonly value="${data.id}" class="input-line val-id"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5;"><input type="number" readonly value="${payload.Custo}" class="input-line val-custo"></span>
+                                <span class="cyber-table-cell" style="flex: 0.6;"><input type="number" readonly class="input-line val-alcance" value="${payload.Alcance}"></span>
+                                <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" readonly ${aprimoradoCheck} class="neon-checkbox val-aprimorado"></span>
+                                <span class="cyber-table-cell" style="flex: 4; padding-left: 10px;">
+                                    <textarea rows="3" class="val-efeito" readonly style="min-height: 35px; font-size: 13px; line-height: 1; border: none; border-bottom: 1px solid var(--neon-blue-glow); background: transparent; padding: 2px;">${payload.Efeito}</textarea>
+                                </span>
+                                <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" readonly ${armaCheck} class="neon-checkbox val-arma"></span>
+                                <span class="cyber-table-cell" style="flex: 0.8;"><input type="checkbox" readonly ${acaoCheck} class="neon-checkbox val-acao"></span>
+                                <span class="cyber-table-cell" style="flex: 0.5;"><button type="button" class="btn-delete" onclick="deleteRow(this)">✖</button></span>
+                            `;
+                            table.appendChild(newRow);
+                        } else {
+                            editRowRef.querySelector('.item-name-btn').innerText = payload.Habilidade;
+                            editRowRef.querySelector('.val-custo').value = payload.Custo;
+                            editRowRef.querySelector('.val-alcance').value = payload.Alcance;
+                            editRowRef.querySelector('.val-efeito').value = payload.Efeito;
+                            editRowRef.querySelector('.val-aprimorado').checked = payload.Aprimorado;
+                            editRowRef.querySelector('.val-arma').checked = payload.Arma;
+                            editRowRef.querySelector('.val-acao').checked = payload.Acao;
+                        }
+                        closeModal('modal-habilidade');
+                    } else {
+                        alert("Erro ao salvar habilidade: " + await response.text());
+                    }
+                } catch (err) {
+                    alert("Falha na comunicação com o servidor.");
+                } finally {
+                    btnSubmit.disabled = false;
+                }
+            }
+
+            // ==========================================
+            // Função de Exclusão 
+            // ==========================================
+            async function deleteRow(btn) {
+                const row = btn.closest('.cyber-table-row');
+                const idInput = row.querySelector('.val-id');
+                const id = idInput ? parseInt(idInput.value) : 0;
+
+                // Se a linha tem ID 0 (algo falhou na criação), só remove visualmente
+                if (id === 0) {
+                    row.remove();
+                    return;
+                }
+
+                // Pergunta ao jogador se ele tem certeza antes de deletar do banco
+                if (!confirm("Tem certeza que deseja excluir este registro permanentemente?")) {
+                    return;
+                }
+
+                // Verifica de qual painel veio o clique para direcionar à Rota correta
+                const isHabilidade = row.closest('#habilidades-list') !== null;
+                const endpoint = isHabilidade
+                    ? `/Agentes/DeletarHabilidade/${id}`
+                    : `/Agentes/DeletarItem/${id}`;
+
+                btn.disabled = true; // Desabilita o "X" para evitar duplo clique
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        // Se o banco deletou com sucesso, nós sumimos com a linha da tela
+                        row.remove();
+                    } else {
+                        const err = await response.text();
+                        alert("Erro ao excluir o registro: " + err);
+                        btn.disabled = false;
+                    }
+                } catch (error) {
+                    alert("Falha na comunicação com o servidor.");
+                    btn.disabled = false;
+                }
+            }
+
+
+            // ==========================================
+            // Função de Exclusão de Personagem
+            // ==========================================
+            async function deletarPersonagem() {
+
+                const idPersonagem = @(Model.Id ?? 0);
+
+                if (idPersonagem === 0) {
+                    alert("Não foi possível identificar o personagem.");
+                    return;
+                }
+
+                const nomePersonagem = document.getElementById('ficha-nome')?.value || "este personagem";
+
+                const confirmacao = confirm(
+                    `ATENÇÃO!\n\n` +
+                    `Você está prestes a excluir permanentemente o personagem "${nomePersonagem}".\n\n` +
+                    `Todos os dados da ficha, atributos, perícias, recursos, ataques, emoções, ` +
+                    `itens, sanidade e habilidades serão apagados.\n\n` +
+                    `Esta ação não pode ser desfeita.\n\n` +
+                    `Deseja realmente continuar?`
+                );
+
+                if (!confirmacao) {
+                    return;
+                }
+
+                try {
+
+                    const response = await fetch(`/Agentes/DeletarAgente/${idPersonagem}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+
+                        alert("Personagem excluído com sucesso.");
+
+                        window.location.href = '@Url.Action("Listagem", "Agentes")';
+
+                    } else {
+
+                        const erro = await response.text();
+
+                        alert(
+                            "Não foi possível excluir o personagem.\n\n" +
+                            erro
+                        );
+                    }
+
+                } catch (error) {
+
+                    console.error("Erro ao excluir personagem:", error);
+
+                    alert(
+                        "Falha na comunicação com o servidor.\n\n" +
+                        "O personagem não foi excluído."
+                    );
+                }
+            }
+
+    </script>
+</body>
+</html>

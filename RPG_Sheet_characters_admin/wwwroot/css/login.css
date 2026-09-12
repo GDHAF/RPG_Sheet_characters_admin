@@ -1,0 +1,278 @@
+﻿:root {
+    /* Paleta Clássica Neon Ciano */
+    --bg-base: #030e20;
+    --panel-bg: rgba(4, 18, 38, 0.95);
+    --neon-blue: #00e5ff;
+    --neon-blue-dim: rgba(0, 229, 255, 0.3);
+    --neon-blue-glow: rgba(0, 229, 255, 0.6);
+    --text-label: #00c3d9;
+    --text-value: #ffffff;
+    --font-main: 'Rajdhani', sans-serif;
+    --danger-color: #ff3366;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-base);
+    background-image: linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+    background-size: 25px 25px;
+    color: var(--text-value);
+    font-family: var(--font-main);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Container Único Centralizado */
+.auth-container {
+    width: 450px;
+    max-width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+/* =========================================
+               CYBER PANEL WRAPPER
+               ========================================= */
+.cyber-panel-wrapper {
+    position: relative;
+    padding: 40px 30px 30px 30px;
+    display: flex;
+    flex-direction: column;
+    filter: drop-shadow(0 0 5px var(--neon-blue-dim));
+    transition: height 0.3s ease;
+}
+
+.cyber-panel-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+    .cyber-panel-bg::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--neon-blue);
+        clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    }
+
+    .cyber-panel-bg::after {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        background: var(--panel-bg);
+        clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+    }
+
+.inner-line {
+    position: absolute;
+    inset: 6px;
+    background: rgba(0, 229, 255, 0.5);
+    clip-path: polygon(11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 11px);
+    z-index: 2;
+}
+
+    .inner-line::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        background: var(--panel-bg);
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+
+.cyber-panel-content {
+    position: relative;
+    z-index: 3;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-title {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-base);
+    color: #f1f9fa;
+    padding: 0 15px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 5px var(--neon-blue);
+    border-left: 2px solid var(--neon-blue);
+    border-right: 2px solid var(--neon-blue);
+    box-shadow: 0 0 10px var(--neon-blue-dim);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    z-index: 6;
+    transition: all 0.3s ease;
+}
+
+    .panel-title::before, .panel-title::after {
+        content: '[';
+        color: #ffffff;
+        text-shadow: none;
+    }
+
+    .panel-title::after {
+        content: ']';
+    }
+
+/* =========================================
+               FORMULÁRIOS & INPUTS
+               ========================================= */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+    .form-group .label {
+        color: var(--text-label);
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-shadow: 0 0 5px var(--neon-blue-dim);
+    }
+
+input {
+    background: transparent;
+    border: none;
+    color: var(--text-value);
+    font-family: var(--font-main);
+    font-size: 18px;
+    font-weight: 600;
+    outline: none;
+    width: 100%;
+    text-shadow: 0 0 2px rgba(255,255,255,0.3);
+    padding: 5px 0;
+}
+
+.input-line {
+    border-bottom: 1px solid var(--neon-blue-glow);
+    transition: border-color 0.3s;
+}
+
+    .input-line:focus {
+        border-bottom-color: #ffffff;
+        box-shadow: 0 5px 5px -5px var(--neon-blue);
+    }
+
+.neon-checkbox {
+    accent-color: var(--neon-blue);
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+    .checkbox-group .label {
+        font-size: 14px;
+        color: var(--text-value);
+        font-weight: 500;
+        text-shadow: none;
+        cursor: pointer;
+    }
+
+.text-danger {
+    color: var(--danger-color);
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 2px;
+    text-shadow: 0 0 5px rgba(255, 51, 102, 0.4);
+}
+
+.btn-submit {
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid var(--neon-blue);
+    color: var(--text-value);
+    padding: 12px 20px;
+    font-family: var(--font-main);
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 4px;
+    text-shadow: 0 0 5px var(--neon-blue);
+    box-shadow: 0 0 5px var(--neon-blue-dim);
+    width: 100%;
+    margin-top: 10px;
+}
+
+    .btn-submit:hover {
+        background: var(--neon-blue);
+        color: var(--bg-base);
+        box-shadow: 0 0 15px var(--neon-blue-glow);
+        text-shadow: none;
+    }
+
+.toggle-link {
+    text-align: center;
+    color: var(--neon-blue-dim);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.3s;
+    margin-top: 15px;
+}
+
+    .toggle-link:hover {
+        color: var(--neon-blue);
+        text-shadow: 0 0 5px var(--neon-blue-glow);
+    }
+
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.15));
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 100;
+}
