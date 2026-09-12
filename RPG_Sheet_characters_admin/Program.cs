@@ -2,8 +2,16 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using RPG_Sheet_characters_admin.Models;
+using System.IO;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(
+        new DirectoryInfo("/app/keys"))
+    .SetApplicationName("RPG_Sheet_characters_admin");
 
 // MVC
 builder.Services.AddControllersWithViews();
