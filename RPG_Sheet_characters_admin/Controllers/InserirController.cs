@@ -19,10 +19,12 @@ namespace RPG_Sheet_characters_admin.Controllers
     {
 
         private readonly ScareContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public InserirController(ScareContext context)
+        public InserirController(ScareContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
 
@@ -116,7 +118,7 @@ namespace RPG_Sheet_characters_admin.Controllers
             }
 
             //Definição da Imagem
-            string imageName = "~\\img\\Gamma_Future_Simbolo.png";
+            string imageName = "Gamma_Future_Simbolo.png";
             byte[]? image = null;
 
             if (model.Imagem != null && model.Imagem.Length > 0)
@@ -131,12 +133,24 @@ namespace RPG_Sheet_characters_admin.Controllers
             }
             else
             {
-                var memoryStream = new MemoryStream();
-                using (var fileStream = new FileStream(imageName, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    fileStream.CopyTo(memoryStream);
-                    image = memoryStream.ToArray();
-                }
+                var defaultImagePath = Path.Combine(
+                    _environment.WebRootPath,
+                    "img",
+                    "Gamma_Future_Simbolo.png"
+                );
+
+                await using var fileStream = new FileStream(
+                    defaultImagePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                );
+
+                using var memoryStream = new MemoryStream();
+
+                await fileStream.CopyToAsync(memoryStream);
+
+                image = memoryStream.ToArray();
             }
 
             //Parâmetro de Saída da Procedure
