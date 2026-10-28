@@ -414,7 +414,7 @@
                                         </div>
                                         <div class="cyber-table-row">
                                             <span class="cyber-table-cell label" style="flex: 2;">Base</span>
-                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[4].Bonus" id="ca-bonus-base" readonly="true" class="input-line" value="0" oninput="updateCA()"></span>
+                                            <span class="cyber-table-cell"><input type="number" value="@Model.Ataques[4].Bonus" id="ca-bonus-base" class="input-line" value="0" oninput="updateCA()"></span>
                                             <span class="cyber-table-cell"><input type="text" id="ca-total-base" class="input-line total-highlight" style="width: 100%; border: none;" readonly tabindex="-1" value="0"></span>
                                         </div>
                                         <div class="cyber-table-row">
@@ -490,9 +490,9 @@
                             <div class="skill-row" data-attr="INT" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[21].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Rastreamento <span class="attr-tag">[INT]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[21].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
                             <div class="skill-row" data-attr="DES" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[22].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Reflexos <span class="attr-tag">[DES]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[22].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
                             <div class="skill-row" data-attr="CON" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[23].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Resistência <span class="attr-tag">[CON]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[23].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
-                            <div class="skill-row" data-attr="CON" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[24].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Resiliência <span class="attr-tag">[CON]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[24].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="CONH" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[24].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Resiliência <span class="attr-tag">[CON]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[24].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
                             <div class="skill-row" data-attr="CONH" data-nvl="fisico"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[25].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Ofício <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[25].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
-                            <div class="skill-row" data-attr="CONH" data-nvl="psi"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[26].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Sensib. Psiônica <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[26].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
+                            <div class="skill-row" data-attr="PROF" data-nvl="psi"><span class="cell-tr"><input type="checkbox" checked="@Model.Pericias[26].Treinado" class="neon-checkbox skill-tr" onchange="updateSkills()"></span><span class="cell-name">Sensib. Psiônica <span class="attr-tag">[CONH]</span></span><input type="text" class="cell-num skill-attr" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-treino" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="text" class="cell-num skill-nvl" readonly tabindex="-1" value="0"><span class="math-sign">+</span><input type="number" class="cell-num skill-outros" value="@Model.Pericias[26].Outros" oninput="updateSkills()"><span class="math-sign">=</span><input type="text" class="cell-num skill-total total-highlight" readonly tabindex="-1" value="0"></div>
                         </div>
                     </div>
                 </div>
@@ -977,10 +977,10 @@
             let editRowRef = null; // Referência global para a linha sendo editada
             let imgSave = false;
 
-            document.getElementById("ficha-origem").value = "@Model.Origem";
-            document.getElementById("ficha-classe").value = "@Model.Classe";
-            document.getElementById("ficha-patente").value = "@Model.Patente";
-            document.getElementById("ficha-status").value = "@Model.Status";
+            document.getElementById("ficha-origem").value = "@Html.Raw(Model.Origem)";
+            document.getElementById("ficha-classe").value = "@Html.Raw(Model.Classe)";
+            document.getElementById("ficha-patente").value = "@Html.Raw(Model.Patente)";
+            document.getElementById("ficha-status").value = "@Html.Raw(Model.Status)";
 
             document.getElementById("rank-pos-det").value = "@Model.Emocoes[0].Ranking";
             document.getElementById("rank-pos-ent").value = "@Model.Emocoes[1].Ranking";
@@ -1151,7 +1151,7 @@
                 const lutaTotal = parseInt(document.getElementById('luta-total').value) || 0;
                 const baseCA = 2 + defArma + lutaTotal;
 
-                const cats = ['corte', 'perf', 'efeito', 'impacto'];
+                const cats = ['base', 'corte', 'perf', 'efeito', 'impacto'];
                 cats.forEach(cat => {
                     const bonus = parseInt(document.getElementById('ca-bonus-' + cat).value) || 0;
                     document.getElementById('ca-total-' + cat).value = baseCA + bonus;
@@ -1433,14 +1433,12 @@
                 const ataquesNomes = ["Base", "Corte", "Perfuração", "Efeito", "Impacto"];
                 ataquesRows.forEach((row, index) => {
                     const inputs = row.querySelectorAll('input');
-                    if(ataquesNomes[index] !== "Base"){
-                        data.Ataques.push({
-                            Categoria: "Ataque",
-                            Tipo: ataquesNomes[index],
-                            Bonus: parseInt(inputs[0].value) || 0,
-                            Extra: inputs[1]?.value || ''
-                        });
-                    };
+                    data.Ataques.push({
+                        Categoria: "Ataque",
+                        Tipo: ataquesNomes[index],
+                        Bonus: parseInt(inputs[0].value) || 0,
+                        Extra: inputs[1]?.value || ''
+                    });
                 });
                 const caNomes = ["Base", "Corte", "Perfuração", "Efeito", "Impacto"];
                 // Coletar Defesa CA

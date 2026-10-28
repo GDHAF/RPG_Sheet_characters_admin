@@ -114,7 +114,7 @@ namespace RPG_Sheet_characters_admin.Controllers
                     .Where(kv => kv.Value.Errors.Count > 0)
                     .Select(kv => $"{kv.Key}: {string.Join("; ", kv.Value.Errors.Select(e => e.ErrorMessage))}");
                 ModelState.AddModelError(string.Empty, string.Join(" | ", erros)); // temporary, for debugging
-                return View("CriarFicha", model);
+                return BadRequest(erros);
             }
 
             //Definição da Imagem
